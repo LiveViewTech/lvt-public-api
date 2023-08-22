@@ -665,11 +665,13 @@ components:
             properties:
               camUserId:
                 type: string
+                format: uuid
               sessionStartTime:
                 type: integer
                 format: int64
               userId:
                 type: string
+                format: uuid
               username:
                 type: string
               name:
