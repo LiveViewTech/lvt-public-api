@@ -104,7 +104,7 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}:
+  /cameras/{cameraId}:
     parameters:
       - name: cameraId
         in: path
@@ -138,7 +138,7 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/position:
+  /cameras/{cameraId}/position:
     parameters:
       - name: cameraId
         in: path
@@ -211,7 +211,7 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/protocols:
+  /cameras/{cameraId}/protocols:
     get:
       summary: Returns list of protocols supported
       tags:
@@ -248,7 +248,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams:
+  /cameras/{cameraId}/streams:
     post:
       summary: Create a stream
       operationId: StartStream
@@ -293,7 +293,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams/{streamId}:checkIn:
+  /cameras/{cameraId}/streams/{streamId}:checkIn:
     post:
       summary: Check in streaming for the camera
       tags:
@@ -333,7 +333,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams/{streamId}:
+  /cameras/{cameraId}/streams/{streamId}:
     delete:
       summary: Check out streaming for the camera
       operationId: CheckOut
