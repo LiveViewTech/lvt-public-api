@@ -1,0 +1,763 @@
+openapi: 3.0.3
+info:
+  title: LVT API
+  description: Public REST API
+  version: 1.0.0
+servers:
+  - url: 'https://api.lvt.com/v1'
+    description: Production v1 server
+security:
+  - BearerAuth: [ ]
+tags:
+  - name: LiveUnits
+    description: Operations on LiveUnits
+  - name: Cameras
+    description: Operations on cameras
+
+paths:
+  /liveUnits:
+    get:
+      operationId: GetLiveUnits
+      tags:
+        - LiveUnits
+      summary: List of liveUnits for the user's client
+      description: This endpoint returns all the live units accessible by the specified client.
+      parameters:
+        - $ref: '#/components/parameters/pageLimit'
+        - $ref: '#/components/parameters/pageToken'
+        - $ref: '#/components/parameters/includeTotal'
+      responses:
+        '200':
+          description: A list of liveUnits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/liveUnits'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}:
+    parameters:
+      - name: liveUnitId
+        in: path
+        description: Specified live unit.
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: GetLiveUnit
+      tags:
+        - LiveUnits
+      summary: Details for the specified live unit.
+      description: Details for the specified live unit.
+      responses:
+        '200':
+          description: A live unit instance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/liveUnit'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}/cameras:
+    get:
+      operationId: GetLiveUnitCameras
+      tags:
+        - LiveUnits
+      summary: List of user accessible cameras hosted by the given liveUnit.
+      parameters:
+        - name: liveUnitId
+          in: path
+          description: Filter results by liveUnitId.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/pageLimit'
+        - $ref: '#/components/parameters/pageToken'
+        - $ref: '#/components/parameters/includeTotal'
+      responses:
+        '200':
+          description: A list of cameras.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cameras'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}/cameras/{cameraId}:
+    parameters:
+      - name: cameraId
+        in: path
+        description: Identifier of the camera to operate on.
+        required: true
+        schema:
+          type: string
+      - name: liveUnitId
+        in: path
+        description: Filter results by liveUnitId.
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: GetCamera
+      tags:
+        - Cameras
+      summary: Details of selected camera.
+      description: Details of selected camera.
+      responses:
+        '200':
+          description: A camera instance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/camera'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}/cameras/{cameraId}/position:
+    parameters:
+      - name: cameraId
+        in: path
+        description: Camera to operate on.
+        required: true
+        schema:
+          type: string
+      - name: liveUnitId
+        in: path
+        description: Filter results by liveUnitId.
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: GetCameraPosition
+      tags:
+        - Cameras
+      description: Returns the selected camera's PTZF values
+      summary: Returns the selected camera's PTZF values
+      responses:
+        '200':
+          description: Current position of the specified camera.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cameraPosition'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '409':
+          $ref: '#/components/responses/409'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+    put:
+      operationId: UpdateCameraPosition
+      tags:
+        - Cameras
+      description: Updates a camera's PTZF
+      summary: Updates the selected camera's PTZF values
+      requestBody:
+        description: Updates the absolute position of a camera
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/cameraPosition'
+      responses:
+        '200':
+          description: A camera instance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cameraPosition'
+        '400': 
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '409':
+          $ref: '#/components/responses/409'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}/cameras/{cameraId}/protocols:
+    get:
+      summary: Returns list of protocols supported
+      tags:
+        - Cameras
+      operationId: GetProtocols
+      description: Get list of protocols supported by this camera.
+      parameters:
+        - in: path
+          name: liveUnitId
+          description: Live unit hosting the specified camera
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: cameraId
+          description: Camera to operate on.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/pageLimit'
+        - $ref: '#/components/parameters/pageToken'
+        - $ref: '#/components/parameters/includeTotal'
+      responses:
+        '200':
+          description: List of protocols supported by the camera.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/streamProtocols'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams:
+    post:
+      summary: Create a stream
+      operationId: StartStream
+      tags:
+        - Cameras
+      description: >-
+        Starts a stream and returns stream data for the camera
+      parameters:
+        - in: path
+          name: liveUnitId
+          description: Live unit hosting the specified camera
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: cameraId
+          description: Camera to operate on.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Specify protocol to stream
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/startStreamRequest'
+      responses:
+        '200':
+          description: stream data for the camera.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/streamDataPoly'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+
+  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams/{streamId}:checkIn:
+    post:
+      summary: Check in streaming for the camera
+      tags:
+        - Cameras
+      operationId: CheckIn
+      description: Check in streaming for the camera
+      parameters:
+        - in: path
+          name: liveUnitId
+          description: Live unit hosting the specified camera
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: cameraId
+          description: Camera to operate on.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: streamId
+          description: The specific stream record id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/checkInResponseData'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams/{streamId}:
+    delete:
+      summary: Check out streaming for the camera
+      operationId: CheckOut
+      tags:
+        - Cameras
+      description: Check out streaming for the camera
+      parameters:
+        - in: path
+          name: liveUnitId
+          description: Live unit hosting the specified camera
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: cameraId
+          description: Camera to operate on.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: streamId
+          description: The specific stream record id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Success
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+###############################################################################
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT used for the authentication of API requests
+
+  responses:
+    '400':
+      description: 'Is returned when the request is formatted improperly.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+    '403':
+      description: 'Is returned when the authorization token provided is invalid or expired.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    '404':
+      description: 'Is returned when the specified resource can not be located.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    '406':
+      description: 'Is returned when "Accept" header has not been specified or does not contain the value "application/json".'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    '409':
+      description: 'Specified resource token is missing or expired.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    '500':
+      description: 'Is returned when processing encounters an error.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    '503':
+      description: 'Is returned when processing is unable to access a needed resource.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    defaultError:
+      description: Unexpected error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+  parameters:
+    pageLimit:
+      name: pageLimit
+      in: query
+      description: Limit reply list page size.
+      schema:
+        type: integer
+        format: uint32
+        minimum: 1
+        maximum: 100
+
+    pageToken:
+      name: pageToken
+      in: query
+      description: Used to populate a paged response. Do not provide on initial request. Reserved for use by backend to paginate.
+      schema:
+        type: string
+
+    includeTotal:
+      name: includeTotal
+      in: query
+      description: Flag indicating that a total number of queryable items should be included in the response
+      schema:
+        type: boolean
+
+  schemas:
+    errorCause:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    error:
+      type: object
+      required:
+        - errorCode
+        - errorSummary
+        - errorId
+        - errorCauses
+      properties:
+        errorCode:
+          type: string
+        errorSummary:
+          type: string
+        errorId:
+          type: string
+        errorCauses:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/errorCause'
+
+    paginated:
+      type: object
+      required: # items should also be defined but is omitted from the schema to keep it generic
+        - itemsPerPage
+        - nextCursorUri
+        - totalResults
+      properties:
+        itemsPerPage:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of items returned in the response
+          example: 24
+        previousCursorUri:
+          type: string
+          nullable: true
+          format: url
+          description: Full URL to re-fetch the values of the previous page
+          example: https://api.lvt.com/v1/liveUnits?cursor=eyJhZnRlciI6IjQyIn0=
+        nextCursorUri:
+          type: string
+          nullable: true
+          format: url
+          description: Full URL to fetch the values of the next page
+          example: https://api.lvt.com/v1/liveUnits?cursor=eyJhZnRlciI6IjQyIn0=
+        totalResults:
+          type: integer
+          description: Total number of items in the collection being iterated
+          example: 1234
+
+    cameraSimple:
+      type: object
+      required:
+        - cameraId
+        - role
+        - liveUnitId
+      properties:
+        cameraId:
+          type: string
+          description: Identifier for the camera
+          example: 1234
+        role:
+          type: string
+          description: Role of the camera
+          example: Left
+        liveUnitId:
+          type: string
+          description: The live unit hosting this camera
+          example: TDC01111
+
+    camera:
+      type: object
+      required:
+        - cameraId
+        - role
+        - gpsLocation
+        - liveUnitId
+        - serialNumber
+        - manufacturerModel
+      properties:
+        cameraId:
+          type: string
+          description: Id of the camera
+          example: Center
+        role:
+          type: string
+          description: TBD
+          example: TBD
+        gpsLocation:
+          $ref: '#/components/schemas/gpsCoordinates'
+        liveUnitId:
+          type: string
+          description: The live unit hosting this camera
+          example: TBD
+        serialNumber:
+          type: string
+          description: Serial number of the camera
+          example: TBD
+        manufacturerModel:
+          type: string
+          description: Manufacturer and model of the camera
+          example: TBD
+
+    cameras:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required:
+            - cameras
+          properties:
+            items:
+              type: array
+              maxItems: 20
+              items:
+                $ref: '#/components/schemas/cameraSimple'
+
+    gpsCoordinates:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          minimum: -90.00
+          maximum: 90.00
+          description: GPS Decimal Degrees Latitude
+          example: 40.123456
+        longitude:
+          type: number
+          format: float
+          minimum: -180.00
+          maximum: 180.00
+          description: GPS Decimal Degrees Longitude
+          example: -111.789
+
+    streamProtocol:
+      type: object
+      required:
+        - protocol
+      properties:
+        protocol:
+          type: string
+          description: A short name for the streaming protocol
+          example: 'webrtc'
+          enum:
+            - 'webrtc'
+            - 'rtsp'
+
+    streamProtocols:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: array
+          items:
+            type: string
+            enum:
+              - 'webrtc'
+              - 'rtsp'
+
+    streamDataPoly:
+      oneOf:
+        - $ref: '#/components/schemas/streamDataRtsp'
+        - $ref: '#/components/schemas/streamDataWebrtc'
+      discriminator:
+        propertyName: protocol
+        mapping:
+          rtsp: '#/components/schemas/streamDataRtsp'
+          webrtc: '#/components/schemas/streamDataWebrtc'
+
+    streamDataRtsp:
+      type: object
+      properties:
+        protocol:
+          type: string
+          description: A short name for the streaming protocol
+          example: 'rtsp'
+        refreshInterval:
+          type: integer
+          format: uint32
+        streamingUrl:
+          type: string
+        streamId:
+          type: string
+
+    streamDataWebrtc:
+      type: object
+      properties:
+        protocol:
+          type: string
+          description: A short name for the streaming protocol
+          example: 'webrtc'
+        streamingServer:
+          type: string
+        streamName:
+          type: string
+        streamId:
+          type: string
+
+    checkInResponseData:
+      type: object
+      properties:
+        currentServerReferenceTime:
+          type: integer
+          format: int64
+        currentStream:
+          type: integer
+          format: uint64
+        suspended:
+          type: boolean
+        currentCameraUsers:
+          type: array
+          items:
+            type: object
+            properties:
+              camUserId:
+                type: integer
+                format: uint64
+              sessionStartTime:
+                type: integer
+                format: uint64
+              userId:
+                type: integer
+                format: uint64
+              username:
+                type: string
+              name:
+                type: string
+
+    liveUnit:
+      type: object
+      required:
+        - gpsLocation
+        - liveUnitId
+      properties:
+        liveUnitId:
+          type: string
+          description: TBD
+          example: TBD
+        gpsLocation:
+          $ref: '#/components/schemas/gpsCoordinates'
+
+    liveUnits:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              maxItems: 20
+              items:
+                $ref: '#/components/schemas/liveUnit'
+
+    startStreamRequest:
+      $ref: '#/components/schemas/streamProtocol'
+
+    cameraPosition:
+      type: object
+      required:
+        - pan
+        - tilt
+        - zoom
+        - focus
+      properties:
+        pan:
+          description: Absolute pan value
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 10000
+        tilt:
+          description: Absolute tilt value.
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 10000
+        zoom:
+          description: Absolute zoom value.
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 10000
+        focus:
+          description: Absolute focus value.  A value of -1 enables auto-focus.
+          type: integer
+          format: int32
+          minimum: -1
+          maximum: 10000
