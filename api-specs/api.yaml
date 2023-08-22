@@ -396,7 +396,7 @@ paths:
 
   /locations/{locationId}:
     parameters:
-      - name: locationid
+      - name: locationId
         in: path
         description: Specified location.
         required: true
