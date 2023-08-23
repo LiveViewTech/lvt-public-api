@@ -22,8 +22,10 @@ paths:
       operationId: GetLiveUnits
       tags:
         - LiveUnits
-      summary: List of liveUnits for the user's client
-      description: This endpoint returns all the live units accessible by the specified client.
+      summary: This endpoint returns all the live units accessible by the specified client.
+      description: >
+        **Phase 1**:
+        List of liveUnits for the user's client
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
@@ -55,7 +57,9 @@ paths:
       tags:
         - LiveUnits
       summary: Details for the specified live unit.
-      description: Details for the specified live unit.
+      description: >
+        **Phase 1**:
+        Details for the specified live unit.
       responses:
         '200':
           description: A live unit instance.
@@ -85,7 +89,9 @@ paths:
       tags:
         - LiveUnits
       summary: Get information on how to make a call to the live unit
-      description: Get information on how to make a call to the live unit
+      description: >
+        **Phase 2**: 
+        Get information on how to make a call to the live unit
       responses:
         '200':
           description: Call information for a live unit
@@ -134,6 +140,146 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
+  /liveUnits/{liveUnitId}/sounds:
+    get:
+      operationId: GetLiveUnitSounds
+      tags:
+        - LiveUnits
+      summary: List of quick sounds that can be played by the live unit
+      description: >
+        **Phase 3**:
+        List of quick sounds that can be played by the live unit
+      parameters:
+        - name: liveUnitId
+          in: path
+          description: Filter results by liveUnitId.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
+      responses:
+        '200':
+          description: A list of sounds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/sounds'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}/sounds/{soundId}:play:
+    post:
+      operationId: PlayLiveUnitSound
+      tags:
+        - LiveUnits
+      summary: Play a quick sound from a live unit
+      description: >
+        **Phase 3**:
+        Play a quick sound from a live unit
+      parameters:
+        - name: liveUnitId
+          in: path
+          description: Filter results by liveUnitId.
+          required: true
+          schema:
+            type: string
+        - name: soundId
+          in: path
+          description: The sound ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Success
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}/lights:
+    get:
+      operationId: GetLiveUnitLights
+      tags:
+        - LiveUnits
+      summary: List of lights on the live unit
+      description: >
+        **Phase 3**:
+        List of lights on the live unit
+      parameters:
+        - name: liveUnitId
+          in: path
+          description: Filter results by liveUnitId.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
+      responses:
+        '200':
+          description: A list of lights.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/lights'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}/lights/{lightId}:toggle:
+    post:
+      operationId: ToggleLiveUnitLight
+      tags:
+        - LiveUnits
+      summary: Toggle the status of a light on a live unit
+      description: >
+        **Phase 3**:
+        Toggle the status of a light on a live unit
+      parameters:
+        - name: liveUnitId
+          in: path
+          description: Filter results by liveUnitId.
+          required: true
+          schema:
+            type: string
+        - name: lightId
+          in: path
+          description: The light ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/toggleLight'
+      responses:
+        '204':
+          description: Success
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
   /cameras/{cameraId}:
     parameters:
       - name: cameraId
@@ -147,7 +293,9 @@ paths:
       tags:
         - Cameras
       summary: Details of selected camera.
-      description: Details of selected camera.
+      description: >
+        **Phase 1**:
+        Details of selected camera.
       responses:
         '200':
           description: A camera instance.
@@ -174,8 +322,10 @@ paths:
       operationId: GetCameraPosition
       tags:
         - Cameras
-      description: Returns the selected camera's PTZF values
       summary: Returns the selected camera's PTZF values
+      description: >
+        **Phase 1**:
+        Returns the selected camera's PTZF values
       responses:
         '200':
           description: Current position of the specified camera.
@@ -200,8 +350,10 @@ paths:
       operationId: UpdateCameraPosition
       tags:
         - Cameras
-      description: Updates a camera's PTZF
       summary: Updates the selected camera's PTZF values
+      description: >
+        **Phase 1**:
+        Updates a camera's PTZF
       requestBody:
         description: Updates the absolute position of a camera
         required: true
@@ -231,11 +383,13 @@ paths:
 
   /cameras/{cameraId}/protocols:
     get:
-      summary: Returns list of protocols supported
+      operationId: GetProtocols
       tags:
         - Cameras
-      operationId: GetProtocols
-      description: Get list of protocols supported by this camera.
+      summary: Returns list of protocols supported
+      description: >
+        **Phase 1**:
+        Get list of protocols supported by this camera.
       parameters:
         - in: path
           name: cameraId
@@ -245,7 +399,6 @@ paths:
             type: string
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: List of protocols supported by the camera.
@@ -262,11 +415,13 @@ paths:
 
   /cameras/{cameraId}/streams:
     post:
-      summary: Create a stream
       operationId: StartStream
       tags:
         - Cameras
-      description: Starts a stream and returns stream data for the camera
+      summary: Start a stream
+      description: >
+        **Phase 1**:
+        Starts a stream and returns stream data for the camera
       parameters:
         - in: path
           name: cameraId
@@ -296,11 +451,13 @@ paths:
 
   /cameras/{cameraId}/streams/{streamId}:checkIn:
     post:
-      summary: Check in streaming for the camera
+      operationId: CheckIn
       tags:
         - Cameras
-      operationId: CheckIn
-      description: Check in streaming for the camera
+      summary: Check in streaming for the camera
+      description: >
+        **Phase 1**:
+        Check in streaming for the camera
       parameters:
         - in: path
           name: cameraId
@@ -330,11 +487,13 @@ paths:
 
   /cameras/{cameraId}/streams/{streamId}:
     delete:
-      summary: Check out streaming for the camera
       operationId: CheckOut
       tags:
         - Cameras
-      description: Check out streaming for the camera
+      summary: Check out streaming for the camera
+      description: >
+        **Phase 1**:
+        Check out streaming for the camera
       parameters:
         - in: path
           name: cameraId
@@ -364,7 +523,9 @@ paths:
       tags:
         - Locations
       summary: List of locations for the user's client
-      description: This endpoint returns all the locations accessible by the specified client.
+      description: >
+        **Phase 1**: 
+        Returns all the locations accessible by the specified client.
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
@@ -396,7 +557,9 @@ paths:
       tags:
         - Locations
       summary: Details for the specified location.
-      description: Details for the specified location.
+      description: >
+        **Phase 1**:
+        Details for the specified location.
       responses:
         '200':
           description: A location instance.
@@ -419,6 +582,9 @@ paths:
       tags:
         - Locations
       summary: List of user accessible live units at the given location.
+      description: >
+        **Phase 1**:
+        List of user accessible live units at the given location.
       parameters:
         - name: locationId
           in: path
@@ -451,6 +617,9 @@ paths:
       tags:
         - Alerts
       summary: Get all alerts a user has access to
+      description: >
+        **Phase 2**:
+        Get all alerts a user has access to
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
@@ -471,12 +640,78 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
+  /alerts/{alertId}:
+    get:
+      operationId: GetAlert
+      tags:
+        - Alerts
+      summary: Get a single alert
+      description: >
+        **Phase 2**:
+        Get a single alert
+      parameters:
+        - name: alertId
+          in: path
+          description: The ID of the alert
+      responses:
+        200:
+          description: A single alert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/alert'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts/{alertId}:resolve:
+    post:
+      operationId: ResolveAlert
+      tags:
+        - Alerts
+      summary: Resolve a single alert
+      description: >
+        **Phase 2**:
+        Resolve a single alert
+      parameters:
+        - name: alertId
+          in: path
+          description: The ID of the alert
+      requestBody:
+        $ref: '#/components/requestBodies/resolveAlert'
+      responses:
+        202:
+          # TODO: Figure out what to give back
+          description: The resolve process has been initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/alert'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
   /alerts/webhooks:
     post:
       operationId: CreateAlertsWebhook
       tags:
         - Alerts
       summary: Register a new webhook to receive alerts
+      description: >
+        **Phase 4**:
+        Register a new webhook to receive alerts
       requestBody:
         $ref: '#/components/requestBodies/createWebhook'
       responses:
@@ -500,6 +735,9 @@ paths:
       tags:
         - Alerts
       summary: Get a list of registered webhooks
+      description: >
+        **Phase 4**:
+        Get a list of registered webhooks
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
@@ -531,7 +769,9 @@ paths:
       tags:
         - Alerts
       summary: Get information about a single webhook
-      description: Get information about a single webhook
+      description: >
+        **Phase 4**:
+        Get information about a single webhook
       responses:
         '200':
           description: Success
@@ -553,7 +793,9 @@ paths:
       tags:
         - Alerts
       summary: Update a webhook
-      description: Update a webhook
+      description: >
+        **Phase 4**:
+        Update a webhook
       requestBody:
         $ref: '#/components/requestBodies/createWebhook'
       responses:
@@ -579,67 +821,12 @@ paths:
       tags:
         - Alerts
       summary: Delete a webhook
-      description: Delete a webhook
+      description: >
+        **Phase 4**:
+        Delete a webhook
       responses:
         '204':
           description: Success
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
-
-  /alerts/{alertId}:
-    get:
-      operationId: GetAlert
-      tags:
-        - Alerts
-      summary: Get a single alert
-      parameters:
-        - name: alertId
-          in: path
-          description: The ID of the alert
-      responses:
-        200:
-          description: A single alert
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/alert'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
-
-  /alerts/{alertId}:resolve:
-    post:
-      operationId: ResolveAlert
-      tags:
-        - Alerts
-      summary: Resolve a single alert
-      parameters:
-        - name: alertId
-          in: path
-          description: The ID of the alert
-      requestBody:
-        $ref: '#/components/requestBodies/resolveAlert'
-      responses:
-        202:
-          # TODO: Figure out what to give back
-          description: The resolve process has been initiated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/alert'
-        '400':
-          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -736,7 +923,9 @@ components:
     filter:
       name: filter
       in: query
-      description: Filter statement for narrowing collection results
+      description: >
+        **Phase 2**:
+        Filter query for narrowing collection results
       schema:
         type: string
 
@@ -784,6 +973,20 @@ components:
               notes:
                 type: string
                 description: Additional information about the resolution (Optional unless 'other' is sent for the `resolutionType`)
+
+    toggleLight:
+      # TODO: Fill out what this looks like
+      required: false
+      description: If this body is not provided the default behavior of the request is to "toggle" the state, from `on` to `off` or vice versa.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                $ref: '#/components/schemas/lightState'
 
   schemas:
     camera:
@@ -1250,3 +1453,72 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/webhook'
+
+    sound:
+      type: object
+      description: The information about a quick sound a live unit can play.
+      required:
+        - id # Does this use an id?
+        - name
+      properties:
+        # TODO: Figure out what is in here
+        id:
+          type: string
+          format: uuid
+          description: The ID of the sound.
+        name:
+          type: string
+          description: The human readable name of the sound.
+          example: Trespassing
+
+    sounds:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required: [ items ]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/sound'
+
+    lightState:
+      type: string
+      enum:
+        - 'on'
+        - 'off'
+
+    light:
+      type: object
+      description: A light on a live unit.
+      required:
+        - id # Does this use an id?
+        - type
+        - status
+      properties:
+        # TODO: Figure out what is in here
+        id:
+          type: string
+          format: uuid
+          description: The ID of the light.
+        type:
+          type: string
+          description: The type of light
+          enum:
+            - strobe
+            - flood
+            - camera
+        state:
+          # TODO: Is it possible to get the state?
+          $ref: '#/components/schemas/lightState'
+
+    lights:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required: [ items ]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/light'
