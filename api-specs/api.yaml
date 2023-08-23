@@ -25,9 +25,9 @@ paths:
       summary: List of liveUnits for the user's client
       description: This endpoint returns all the live units accessible by the specified client.
       parameters:
-        - $ref: '#/components/parameters/pageLimit'
-        - $ref: '#/components/parameters/pageToken'
-        - $ref: '#/components/parameters/includeTotal'
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of liveUnits.
@@ -72,6 +72,36 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
+  /liveUnits/{liveUnitId}/callInfo:
+    parameters:
+      - name: liveUnitId
+        in: path
+        description: Specified live unit.
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: GetLiveUnitCallInfo
+      tags:
+        - LiveUnits
+      summary: Get information on how to make a call to the live unit
+      description: Get information on how to make a call to the live unit
+      responses:
+        '200':
+          description: Call information for a live unit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/callInfo'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
   /liveUnits/{liveUnitId}/cameras:
     get:
       operationId: GetLiveUnitCameras
@@ -85,9 +115,9 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/pageLimit'
-        - $ref: '#/components/parameters/pageToken'
-        - $ref: '#/components/parameters/includeTotal'
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of cameras.
@@ -186,7 +216,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/cameraPosition'
-        '400': 
+        '400':
           $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
@@ -213,9 +243,9 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/pageLimit'
-        - $ref: '#/components/parameters/pageToken'
-        - $ref: '#/components/parameters/includeTotal'
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: List of protocols supported by the camera.
@@ -245,12 +275,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Specify protocol to stream
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/startStreamRequest'
+        $ref: '#/components/requestBodies/startStream'
       responses:
         '200':
           description: stream data for the camera.
@@ -341,9 +366,9 @@ paths:
       summary: List of locations for the user's client
       description: This endpoint returns all the locations accessible by the specified client.
       parameters:
-        - $ref: '#/components/parameters/pageLimit'
-        - $ref: '#/components/parameters/pageToken'
-        - $ref: '#/components/parameters/includeTotal'
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of locations.
@@ -401,9 +426,9 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/pageLimit'
-        - $ref: '#/components/parameters/pageToken'
-        - $ref: '#/components/parameters/includeTotal'
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of live units.
@@ -411,6 +436,210 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/liveUnits'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts:
+    get:
+      operationId: GetAlerts
+      tags:
+        - Alerts
+      summary: Get all alerts a user has access to
+      parameters:
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
+      responses:
+        200:
+          description: A list of alerts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/alerts'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts/webhooks:
+    post:
+      operationId: CreateAlertsWebhook
+      tags:
+        - Alerts
+      summary: Register a new webhook to receive alerts
+      requestBody:
+        $ref: '#/components/requestBodies/createWebhook'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+    get:
+      operationId: GetAlertsWebhooks
+      tags:
+        - Alerts
+      summary: Get a list of registered webhooks
+      parameters:
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/filter'
+      responses:
+        '200':
+          description: A list of webhooks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhooks'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts/webhooks/{webhookId}:
+    parameters:
+      - name: webhookId
+        in: path
+        description: The id of the webhook
+
+    get:
+      operationId: GetAlertsWebhook
+      tags:
+        - Alerts
+      summary: Get information about a single webhook
+      description: Get information about a single webhook
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+    put:
+      operationId: UpdateAlertsWebhook
+      tags:
+        - Alerts
+      summary: Update a webhook
+      description: Update a webhook
+      requestBody:
+        $ref: '#/components/requestBodies/createWebhook'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/webhook'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+    delete:
+      operationId: DeleteAlertsWebhook
+      tags:
+        - Alerts
+      summary: Delete a webhook
+      description: Delete a webhook
+      responses:
+        '204':
+          description: Success
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts/{alertId}:
+    get:
+      operationId: GetAlert
+      tags:
+        - Alerts
+      summary: Get a single alert
+      parameters:
+        - name: alertId
+          in: path
+          description: The ID of the alert
+      responses:
+        200:
+          description: A single alert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/alert'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts/{alertId}:resolve:
+    post:
+      operationId: ResolveAlert
+      tags:
+        - Alerts
+      summary: Resolve a single alert
+      parameters:
+        - name: alertId
+          in: path
+          description: The ID of the alert
+      requestBody:
+        $ref: '#/components/requestBodies/resolveAlert'
+      responses:
+        202:
+          # TODO: Figure out what to give back
+          description: The resolve process has been initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/alert'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -487,8 +716,8 @@ components:
             $ref: '#/components/schemas/error'
 
   parameters:
-    pageLimit:
-      name: pageLimit
+    count:
+      name: count
       in: query
       description: Limit reply list page size.
       schema:
@@ -497,19 +726,64 @@ components:
         minimum: 1
         maximum: 100
 
-    pageToken:
-      name: pageToken
+    cursor:
+      name: cursor
       in: query
       description: Used to populate a paged response. Do not provide on initial request. Reserved for use by backend to paginate.
       schema:
         type: string
 
-    includeTotal:
-      name: includeTotal
+    filter:
+      name: filter
       in: query
-      description: Flag indicating that a total number of queryable items should be included in the response
+      description: Filter statement for narrowing collection results
       schema:
-        type: boolean
+        type: string
+
+  requestBodies:
+    createWebhook:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - url
+            properties:
+              url:
+                type: string
+                format: uri
+                example: https://api.external.com/receiveWebhookEvent
+              filter:
+                type: string
+
+    startStream:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - protocol
+            properties:
+              protocol:
+                type: string
+                enum:
+                  - webrtc
+                  - rtsp
+
+    resolveAlert:
+      # TODO: Fill out what this looks like
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - resolutionType
+            properties:
+              resolutionType:
+                $ref: '#/components/schemas/alertResolutionType'
+              notes:
+                type: string
+                description: Additional information about the resolution (Optional unless 'other' is sent for the `resolutionType`)
 
   schemas:
     camera:
@@ -610,7 +884,7 @@ components:
           format: int32
           minimum: -1
           maximum: 10000
-            
+
     cameraCheckInResponseData:
       type: object
       properties:
@@ -781,9 +1055,6 @@ components:
         streamId:
           type: string
 
-    startStreamRequest:
-      $ref: '#/components/schemas/streamProtocol'
-
     errorCause:
       type: object
       required:
@@ -831,13 +1102,13 @@ components:
         previousCursorUri:
           type: string
           nullable: true
-          format: url
+          format: uri
           description: Full URL to re-fetch the values of the previous page
           example: https://api.lvt.com/v1/liveUnits?cursor=eyJhZnRlciI6IjQyIn0=
         nextCursorUri:
           type: string
           nullable: true
-          format: url
+          format: uri
           description: Full URL to fetch the values of the next page
           example: https://api.lvt.com/v1/liveUnits?cursor=eyJhZnRlciI6IjQyIn0=
         totalResults:
@@ -845,3 +1116,137 @@ components:
           description: Total number of items in the collection being iterated
           example: 1234
 
+    alert:
+      # TODO: Fill out what this looks like
+      type: object
+      required:
+        - id
+        - liveUnitId
+        - cameraId
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The id of the alert
+        liveUnitId:
+          type: string
+          format: uuid
+          description: The id of the live unit that raised the alert
+        cameraId:
+          type: string
+          format: uuid
+          description: The id of the camera that triggered the alert
+        cause:
+          $ref: '#/components/schemas/alertCause'
+        subject:
+          $ref: '#/components/schemas/alertSubject'
+
+    alerts:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              maxItems: 100
+              items:
+                $ref: '#/components/schemas/alert'
+
+    alertCause:
+      type: string
+      description: What triggered the alert
+      enum:
+        # TODO: What casing should we use?
+        - mastMovement
+        - baseEntry
+        - lowVoltageDisconnect
+        - intrusion
+        - loitering
+        - potentialGunShotDetection
+        - other
+
+    alertSubject:
+      type: string
+      nullable: true
+      description: An optional sub-classification for an alert cause
+      enum:
+        # TODO: What casing should we use?
+        - human
+        - vehicle
+        - object
+
+    alertResolutionType:
+      type: string
+      description: A category for the resolution of the alert
+      enum:
+        # TODO: What casing should we use?
+        - accident
+        - animal
+        - deterredCrime
+        - employee/vendor
+        - suspiciousActivity
+        - tampering
+        - loitering
+        - theft
+        - technicalIssue
+        - violence
+        - other
+
+    callInfo:
+      # TODO: Verify this information and types
+      type: object
+      description: Information required to call a live unit
+      required:
+        - phoneNumber
+        - extension
+        - passcode
+      properties:
+        phoneNumber:
+          type: string
+          format: phone
+          description: The phone number to call in with
+          example: +1 (111) 111-1111
+        extension:
+          type: string
+          format: int32
+          description: The extension to dial after calling in
+          example: 1234
+        passcode:
+          type: string
+          format: int32
+          description: The passcode to enter when prompted
+          example: 1234
+
+    webhook:
+      type: object
+      description: Information about a registered webhook
+      required:
+        - id
+        - url
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ID of the webhook resource
+        url:
+          type: string
+          format: uri
+          description: The URL to send the webhook event to
+          example: https://api.external.com/receiveWebhook
+        filter:
+          description: The filter query applied to incoming alerts
+          type: string
+
+    webhooks:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required: [ items ]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/webhook'
