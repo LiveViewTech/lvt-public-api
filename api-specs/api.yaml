@@ -112,12 +112,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: liveUnitId
-        in: path
-        description: Filter results by liveUnitId.
-        required: true
-        schema:
-          type: string
     get:
       operationId: GetLiveUnitCamera
       tags:
@@ -143,12 +137,6 @@ paths:
       - name: cameraId
         in: path
         description: Camera to operate on.
-        required: true
-        schema:
-          type: string
-      - name: liveUnitId
-        in: path
-        description: Filter results by liveUnitId.
         required: true
         schema:
           type: string
@@ -220,12 +208,6 @@ paths:
       description: Get list of protocols supported by this camera.
       parameters:
         - in: path
-          name: liveUnitId
-          description: Live unit hosting the specified camera
-          required: true
-          schema:
-            type: string
-        - in: path
           name: cameraId
           description: Camera to operate on.
           required: true
@@ -256,12 +238,6 @@ paths:
         - Cameras
       description: Starts a stream and returns stream data for the camera
       parameters:
-        - in: path
-          name: liveUnitId
-          description: Live unit hosting the specified camera
-          required: true
-          schema:
-            type: string
         - in: path
           name: cameraId
           description: Camera to operate on.
@@ -302,12 +278,6 @@ paths:
       description: Check in streaming for the camera
       parameters:
         - in: path
-          name: liveUnitId
-          description: Live unit hosting the specified camera
-          required: true
-          schema:
-            type: string
-        - in: path
           name: cameraId
           description: Camera to operate on.
           required: true
@@ -341,12 +311,6 @@ paths:
         - Cameras
       description: Check out streaming for the camera
       parameters:
-        - in: path
-          name: liveUnitId
-          description: Live unit hosting the specified camera
-          required: true
-          schema:
-            type: string
         - in: path
           name: cameraId
           description: Camera to operate on.
