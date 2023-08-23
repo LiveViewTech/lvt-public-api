@@ -1258,36 +1258,34 @@ components:
         streamId:
           type: string
 
-    errorCause:
-      type: object
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-
     error:
       type: object
       required:
         - errorCode
         - errorSummary
         - errorId
-        - errorCauses
+        - errorCause
       properties:
         errorCode:
           type: string
+          description: A code that is associated with this error type
+          example: E0000001
         errorSummary:
           type: string
+          description: A natural language explanation of the error
+          example: Api validation failed
         errorId:
           type: string
+          description: >
+            An ID that identifies this request. 
+            These IDs are mapped to the internal error on the server side to assist in troubleshooting.
+          example: oaeHfmOAx1iRLa0H10DeMz5fQ
         errorCauses:
           type: array
-          maxItems: 20
+          description: Further information about what caused this error. Should be empty array if no causes given.
           items:
-            $ref: '#/components/schemas/errorCause'
+            type: string
+            example: 'login: An object with this field already exists in the current organization'
 
     paginated:
       type: object
