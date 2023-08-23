@@ -9,10 +9,12 @@ servers:
 security:
   - BearerAuth: [ ]
 tags:
-  - name: LiveUnits
-    description: Operations on LiveUnits
   - name: Cameras
     description: Operations on cameras
+  - name: LiveUnits
+    description: Operations on LiveUnits
+  - name: Locations
+    description: Operations on locations
 
 paths:
   /liveUnits:
@@ -102,7 +104,7 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}:
+  /cameras/{cameraId}:
     parameters:
       - name: cameraId
         in: path
@@ -110,14 +112,8 @@ paths:
         required: true
         schema:
           type: string
-      - name: liveUnitId
-        in: path
-        description: Filter results by liveUnitId.
-        required: true
-        schema:
-          type: string
     get:
-      operationId: GetCamera
+      operationId: GetLiveUnitCamera
       tags:
         - Cameras
       summary: Details of selected camera.
@@ -136,17 +132,11 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/position:
+  /cameras/{cameraId}/position:
     parameters:
       - name: cameraId
         in: path
         description: Camera to operate on.
-        required: true
-        schema:
-          type: string
-      - name: liveUnitId
-        in: path
-        description: Filter results by liveUnitId.
         required: true
         schema:
           type: string
@@ -209,7 +199,7 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/protocols:
+  /cameras/{cameraId}/protocols:
     get:
       summary: Returns list of protocols supported
       tags:
@@ -217,12 +207,6 @@ paths:
       operationId: GetProtocols
       description: Get list of protocols supported by this camera.
       parameters:
-        - in: path
-          name: liveUnitId
-          description: Live unit hosting the specified camera
-          required: true
-          schema:
-            type: string
         - in: path
           name: cameraId
           description: Camera to operate on.
@@ -246,21 +230,14 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams:
+  /cameras/{cameraId}/streams:
     post:
       summary: Create a stream
       operationId: StartStream
       tags:
         - Cameras
-      description: >-
-        Starts a stream and returns stream data for the camera
+      description: Starts a stream and returns stream data for the camera
       parameters:
-        - in: path
-          name: liveUnitId
-          description: Live unit hosting the specified camera
-          required: true
-          schema:
-            type: string
         - in: path
           name: cameraId
           description: Camera to operate on.
@@ -292,7 +269,7 @@ paths:
         '503':
           $ref: '#/components/responses/503'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams/{streamId}:checkIn:
+  /cameras/{cameraId}/streams/{streamId}:checkIn:
     post:
       summary: Check in streaming for the camera
       tags:
@@ -300,12 +277,6 @@ paths:
       operationId: CheckIn
       description: Check in streaming for the camera
       parameters:
-        - in: path
-          name: liveUnitId
-          description: Live unit hosting the specified camera
-          required: true
-          schema:
-            type: string
         - in: path
           name: cameraId
           description: Camera to operate on.
@@ -324,7 +295,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/checkInResponseData'
+                $ref: '#/components/schemas/cameraCheckInResponseData'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -332,7 +303,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
-  /liveUnits/{liveUnitId}/cameras/{cameraId}/streams/{streamId}:
+  /cameras/{cameraId}/streams/{streamId}:
     delete:
       summary: Check out streaming for the camera
       operationId: CheckOut
@@ -340,12 +311,6 @@ paths:
         - Cameras
       description: Check out streaming for the camera
       parameters:
-        - in: path
-          name: liveUnitId
-          description: Live unit hosting the specified camera
-          required: true
-          schema:
-            type: string
         - in: path
           name: cameraId
           description: Camera to operate on.
@@ -367,6 +332,93 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+
+  /locations:
+    get:
+      operationId: GetLocations
+      tags:
+        - Locations
+      summary: List of locations for the user's client
+      description: This endpoint returns all the locations accessible by the specified client.
+      parameters:
+        - $ref: '#/components/parameters/pageLimit'
+        - $ref: '#/components/parameters/pageToken'
+        - $ref: '#/components/parameters/includeTotal'
+      responses:
+        '200':
+          description: A list of locations.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/locations'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /locations/{locationId}:
+    parameters:
+      - name: locationId
+        in: path
+        description: Specified location.
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: GetLocation
+      tags:
+        - Locations
+      summary: Details for the specified location.
+      description: Details for the specified location.
+      responses:
+        '200':
+          description: A location instance.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/location'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /locations/{locationId}/liveUnits:
+    get:
+      operationId: GetLocationLiveUnits
+      tags:
+        - Locations
+      summary: List of user accessible live units at the given location.
+      parameters:
+        - name: locationId
+          in: path
+          description: Filter results by locationId.
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/pageLimit'
+        - $ref: '#/components/parameters/pageToken'
+        - $ref: '#/components/parameters/includeTotal'
+      responses:
+        '200':
+          description: A list of live units.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/liveUnits'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
 
 ###############################################################################
 
@@ -441,7 +493,7 @@ components:
       description: Limit reply list page size.
       schema:
         type: integer
-        format: uint32
+        format: int32
         minimum: 1
         maximum: 100
 
@@ -460,6 +512,278 @@ components:
         type: boolean
 
   schemas:
+    camera:
+      type: object
+      required:
+        - cameraId
+        - role
+        - gpsLocation
+        - liveUnitId
+        - serialNumber
+        - manufacturerModel
+      properties:
+        cameraId:
+          type: string
+          description: Id of the camera
+          example: Center
+        role:
+          type: string
+          description: TBD
+          example: TBD
+        gpsLocation:
+          $ref: '#/components/schemas/gpsCoordinates'
+        liveUnitId:
+          type: string
+          description: The live unit hosting this camera
+          example: TBD
+        serialNumber:
+          type: string
+          description: Serial number of the camera
+          example: TBD
+        manufacturerModel:
+          type: string
+          description: Manufacturer and model of the camera
+          example: TBD
+
+    cameras:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required:
+            - cameras
+          properties:
+            items:
+              type: array
+              maxItems: 20
+              items:
+                $ref: '#/components/schemas/cameraSimple'
+
+    cameraSimple:
+      type: object
+      required:
+        - cameraId
+        - role
+        - liveUnitId
+      properties:
+        cameraId:
+          type: string
+          description: Identifier for the camera
+          example: 1234
+        role:
+          type: string
+          description: Role of the camera
+          example: Left
+        liveUnitId:
+          type: string
+          description: The live unit hosting this camera
+          example: TDC01111
+
+    cameraPosition:
+      type: object
+      required:
+        - pan
+        - tilt
+        - zoom
+        - focus
+      properties:
+        pan:
+          description: Absolute pan value
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 10000
+        tilt:
+          description: Absolute tilt value.
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 10000
+        zoom:
+          description: Absolute zoom value.
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 10000
+        focus:
+          description: Absolute focus value.  A value of -1 enables auto-focus.
+          type: integer
+          format: int32
+          minimum: -1
+          maximum: 10000
+            
+    cameraCheckInResponseData:
+      type: object
+      properties:
+        currentServerReferenceTime:
+          type: integer
+          format: int64
+        currentStream:
+          type: integer
+          format: int64
+        suspended:
+          type: boolean
+        currentCameraUsers:
+          type: array
+          items:
+            type: object
+            properties:
+              camUserId:
+                type: string
+                format: uuid
+              sessionStartTime:
+                type: integer
+                format: int64
+              userId:
+                type: string
+                format: uuid
+              username:
+                type: string
+              name:
+                type: string
+
+    liveUnit:
+      type: object
+      required:
+        - gpsLocation
+        - liveUnitId
+      properties:
+        liveUnitId:
+          type: string
+          description: TBD
+          example: TBD
+        gpsLocation:
+          $ref: '#/components/schemas/gpsCoordinates'
+
+    liveUnits:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              maxItems: 20
+              items:
+                $ref: '#/components/schemas/liveUnit'
+
+    gpsCoordinates:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          minimum: -90.00
+          maximum: 90.00
+          description: GPS Decimal Degrees Latitude
+          example: 40.123456
+        longitude:
+          type: number
+          format: float
+          minimum: -180.00
+          maximum: 180.00
+          description: GPS Decimal Degrees Longitude
+          example: -111.789
+
+    location:
+      type: object
+      required:
+        - gpsLocation
+        - locationId
+        - name
+      properties:
+        locationId:
+          type: string
+          description: 'UUID of location'
+          example: '780f17e0-86ec-4a67-b2ad-b3cc61ee55fd'
+        gpsLocation:
+          $ref: '#/components/schemas/gpsCoordinates'
+        name:
+          type: string
+          description: 'User defined name of a location'
+          example: 'Store #326 North Parking Lot'
+
+    locations:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              maxItems: 20
+              items:
+                $ref: '#/components/schemas/locations'
+
+    streamProtocol:
+      type: object
+      required:
+        - protocol
+      properties:
+        protocol:
+          type: string
+          description: A short name for the streaming protocol
+          example: 'webrtc'
+          enum:
+            - 'webrtc'
+            - 'rtsp'
+
+    streamProtocols:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: array
+          items:
+            type: string
+            enum:
+              - 'webrtc'
+              - 'rtsp'
+
+    streamDataPoly:
+      oneOf:
+        - $ref: '#/components/schemas/streamDataRtsp'
+        - $ref: '#/components/schemas/streamDataWebrtc'
+      discriminator:
+        propertyName: protocol
+        mapping:
+          rtsp: '#/components/schemas/streamDataRtsp'
+          webrtc: '#/components/schemas/streamDataWebrtc'
+
+    streamDataRtsp:
+      type: object
+      properties:
+        protocol:
+          type: string
+          description: A short name for the streaming protocol
+          example: 'rtsp'
+        refreshInterval:
+          type: integer
+          format: int32
+        streamingUrl:
+          type: string
+        streamId:
+          type: string
+
+    streamDataWebrtc:
+      type: object
+      properties:
+        protocol:
+          type: string
+          description: A short name for the streaming protocol
+          example: 'webrtc'
+        streamingServer:
+          type: string
+        streamName:
+          type: string
+        streamId:
+          type: string
+
+    startStreamRequest:
+      $ref: '#/components/schemas/streamProtocol'
+
     errorCause:
       type: object
       required:
@@ -521,243 +845,3 @@ components:
           description: Total number of items in the collection being iterated
           example: 1234
 
-    cameraSimple:
-      type: object
-      required:
-        - cameraId
-        - role
-        - liveUnitId
-      properties:
-        cameraId:
-          type: string
-          description: Identifier for the camera
-          example: 1234
-        role:
-          type: string
-          description: Role of the camera
-          example: Left
-        liveUnitId:
-          type: string
-          description: The live unit hosting this camera
-          example: TDC01111
-
-    camera:
-      type: object
-      required:
-        - cameraId
-        - role
-        - gpsLocation
-        - liveUnitId
-        - serialNumber
-        - manufacturerModel
-      properties:
-        cameraId:
-          type: string
-          description: Id of the camera
-          example: Center
-        role:
-          type: string
-          description: TBD
-          example: TBD
-        gpsLocation:
-          $ref: '#/components/schemas/gpsCoordinates'
-        liveUnitId:
-          type: string
-          description: The live unit hosting this camera
-          example: TBD
-        serialNumber:
-          type: string
-          description: Serial number of the camera
-          example: TBD
-        manufacturerModel:
-          type: string
-          description: Manufacturer and model of the camera
-          example: TBD
-
-    cameras:
-      allOf:
-        - $ref: '#/components/schemas/paginated'
-        - type: object
-          required:
-            - cameras
-          properties:
-            items:
-              type: array
-              maxItems: 20
-              items:
-                $ref: '#/components/schemas/cameraSimple'
-
-    gpsCoordinates:
-      type: object
-      required:
-        - latitude
-        - longitude
-      properties:
-        latitude:
-          type: number
-          format: float
-          minimum: -90.00
-          maximum: 90.00
-          description: GPS Decimal Degrees Latitude
-          example: 40.123456
-        longitude:
-          type: number
-          format: float
-          minimum: -180.00
-          maximum: 180.00
-          description: GPS Decimal Degrees Longitude
-          example: -111.789
-
-    streamProtocol:
-      type: object
-      required:
-        - protocol
-      properties:
-        protocol:
-          type: string
-          description: A short name for the streaming protocol
-          example: 'webrtc'
-          enum:
-            - 'webrtc'
-            - 'rtsp'
-
-    streamProtocols:
-      allOf:
-        - $ref: '#/components/schemas/paginated'
-        - type: array
-          items:
-            type: string
-            enum:
-              - 'webrtc'
-              - 'rtsp'
-
-    streamDataPoly:
-      oneOf:
-        - $ref: '#/components/schemas/streamDataRtsp'
-        - $ref: '#/components/schemas/streamDataWebrtc'
-      discriminator:
-        propertyName: protocol
-        mapping:
-          rtsp: '#/components/schemas/streamDataRtsp'
-          webrtc: '#/components/schemas/streamDataWebrtc'
-
-    streamDataRtsp:
-      type: object
-      properties:
-        protocol:
-          type: string
-          description: A short name for the streaming protocol
-          example: 'rtsp'
-        refreshInterval:
-          type: integer
-          format: uint32
-        streamingUrl:
-          type: string
-        streamId:
-          type: string
-
-    streamDataWebrtc:
-      type: object
-      properties:
-        protocol:
-          type: string
-          description: A short name for the streaming protocol
-          example: 'webrtc'
-        streamingServer:
-          type: string
-        streamName:
-          type: string
-        streamId:
-          type: string
-
-    checkInResponseData:
-      type: object
-      properties:
-        currentServerReferenceTime:
-          type: integer
-          format: int64
-        currentStream:
-          type: integer
-          format: uint64
-        suspended:
-          type: boolean
-        currentCameraUsers:
-          type: array
-          items:
-            type: object
-            properties:
-              camUserId:
-                type: integer
-                format: uint64
-              sessionStartTime:
-                type: integer
-                format: uint64
-              userId:
-                type: integer
-                format: uint64
-              username:
-                type: string
-              name:
-                type: string
-
-    liveUnit:
-      type: object
-      required:
-        - gpsLocation
-        - liveUnitId
-      properties:
-        liveUnitId:
-          type: string
-          description: TBD
-          example: TBD
-        gpsLocation:
-          $ref: '#/components/schemas/gpsCoordinates'
-
-    liveUnits:
-      allOf:
-        - $ref: '#/components/schemas/paginated'
-        - type: object
-          required:
-            - items
-          properties:
-            items:
-              type: array
-              maxItems: 20
-              items:
-                $ref: '#/components/schemas/liveUnit'
-
-    startStreamRequest:
-      $ref: '#/components/schemas/streamProtocol'
-
-    cameraPosition:
-      type: object
-      required:
-        - pan
-        - tilt
-        - zoom
-        - focus
-      properties:
-        pan:
-          description: Absolute pan value
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 10000
-        tilt:
-          description: Absolute tilt value.
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 10000
-        zoom:
-          description: Absolute zoom value.
-          type: integer
-          format: int32
-          minimum: 0
-          maximum: 10000
-        focus:
-          description: Absolute focus value.  A value of -1 enables auto-focus.
-          type: integer
-          format: int32
-          minimum: -1
-          maximum: 10000
