@@ -418,10 +418,10 @@ paths:
       operationId: StartStream
       tags:
         - Cameras
-      summary: Start a stream
+      summary: Start or get an existing stream
       description: >
         **Phase 1**:
-        Starts a stream and returns stream data for the camera
+        Starts or gets an existing stream and returns stream data for the camera
       parameters:
         - in: path
           name: cameraId
@@ -1317,31 +1317,134 @@ components:
           description: Total number of items in the collection being iterated
           example: 1234
 
+    cameraRole:
+      type: string
+      description: The role of the camera on the live unit (if it has one)
+      enum:
+        - primary
+        - left
+        - right
+        - none
+
+    alertMedia:
+      type: object
+      required:
+        - id
+        - alertId
+        - cameraId
+        - cameraRole
+        - mimeType
+        - mediaTimestamp
+        - url
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The ID of the media item
+        alertId:
+          type: string
+          format: uuid
+          description: The ID of the alert the media is associated with
+        cameraId:
+          type: string
+          format: uuid
+          description: The ID of the camera the media was taken from
+        cameraRole:
+          type: string
+          description: The role of the camera (if it has one)
+        mimeType:
+          type: string
+          format: mime
+          description: The mime type of the media
+          example: image/jpeg
+        mediaTimestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted date-time string of when the media was captured
+        url:
+          type: string
+          format: url
+          description: Signed URL to access the media. Default expiration is TBD # TODO: Determine this
+
+    alertResolution:
+      type: object
+      description: Details about an alert resolution
+      required:
+        - tags
+      properties:
+
+
     alert:
       # TODO: Fill out what this looks like
       type: object
       required:
         - id
-        - liveUnitId
+        - alertTimestamp
         - cameraId
-        - type
+        - cameraRole
+        - cause
+        - clientId
+        - clientName
+        - liveUnitId
+        - liveUnitName
+        - locationId
+        - locationName
+        - media
+        - state
       properties:
         id:
           type: string
           format: uuid
           description: The id of the alert
-        liveUnitId:
+        alertTimestamp:
           type: string
-          format: uuid
-          description: The id of the live unit that raised the alert
+          format: date-time
+          description: ISO 8601 formatted date-time for when the alert was raised
         cameraId:
           type: string
           format: uuid
           description: The id of the camera that triggered the alert
+        cameraRole:
+          $ref: '#/components/schemas/cameraRole'
         cause:
           $ref: '#/components/schemas/alertCause'
+        clientId:
+          type: string
+          format: uuid
+          description: The client who owns the live unit that raised the alert
+        clientName:
+          type: string
+          description: The name of the client who owns the live unit that raised the alert
+        liveUnitId:
+          type: string
+          format: uuid
+          description: The id of the live unit that raised the alert
+        liveUnitName:
+          type: string
+          description: The name of the live unit that raised the alert
+        locationId:
+          type: string
+          format: uuid
+          description: The id of the location that raised the alert
+        locationName:
+          type: string
+          description: The name of the location that raised the alert
+        media:
+          type: array
+          description: A list of media that were captured for the alert
+          items:
+            $ref: '#/components/schemas/alertMedia'
+        state:
+          type: string
+          description: The current state of the alert
+          enum:
+            - unresolved
+            - resolved
+            - resolveInitiated
         subject:
           $ref: '#/components/schemas/alertSubject'
+        resolution:
+          $ref: '#/components/schemas/alertResolution'
 
     alerts:
       allOf:
@@ -1387,7 +1490,7 @@ components:
         - accident
         - animal
         - deterredCrime
-        - employee/vendor
+        - employeeVendor
         - suspiciousActivity
         - tampering
         - loitering
