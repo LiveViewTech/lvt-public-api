@@ -242,9 +242,9 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /liveUnits/{liveUnitId}/lights/{lightId}:toggle:
-    post:
-      operationId: ToggleLiveUnitLight
+  /liveUnits/{liveUnitId}/lights/{lightId}:
+    patch:
+      operationId: UpdateLiveUnitLight
       tags:
         - LiveUnits
       summary: Toggle the status of a light on a live unit
@@ -265,7 +265,7 @@ paths:
           schema:
             type: string
       requestBody:
-        $ref: '#/components/requestBodies/toggleLight'
+        $ref: '#/components/requestBodies/updateLiveUnitLight'
       responses:
         '204':
           description: Success
@@ -703,11 +703,11 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /alerts/webhooks:
+  /webhooks:
     post:
-      operationId: CreateAlertsWebhook
+      operationId: CreateWebhook
       tags:
-        - Alerts
+        - Webhooks
       summary: Register a new webhook to receive alerts
       description: >
         **Phase 4**:
@@ -731,9 +731,9 @@ paths:
           $ref: '#/components/responses/defaultError'
 
     get:
-      operationId: GetAlertsWebhooks
+      operationId: GetWebhooks
       tags:
-        - Alerts
+        - Webhooks
       summary: Get a list of registered webhooks
       description: >
         **Phase 4**:
@@ -758,16 +758,16 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /alerts/webhooks/{webhookId}:
+  /webhooks/{webhookId}:
     parameters:
       - name: webhookId
         in: path
         description: The id of the webhook
 
     get:
-      operationId: GetAlertsWebhook
+      operationId: GetWebhook
       tags:
-        - Alerts
+        - Webhooks
       summary: Get information about a single webhook
       description: >
         **Phase 4**:
@@ -788,16 +788,16 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-    put:
-      operationId: UpdateAlertsWebhook
+    patch:
+      operationId: UpdateWebhook
       tags:
-        - Alerts
+        - Webhooks
       summary: Update a webhook
       description: >
         **Phase 4**:
         Update a webhook
       requestBody:
-        $ref: '#/components/requestBodies/createWebhook'
+        $ref: '#/components/requestBodies/updateWebhook'
       responses:
         '200':
           description: Success
@@ -817,9 +817,9 @@ paths:
           $ref: '#/components/responses/defaultError'
 
     delete:
-      operationId: DeleteAlertsWebhook
+      operationId: DeleteWebhook
       tags:
-        - Alerts
+        - Webhooks
       summary: Delete a webhook
       description: >
         **Phase 4**:
@@ -937,13 +937,40 @@ components:
             type: object
             required:
               - url
+              - type
             properties:
               url:
                 type: string
                 format: uri
+                description: The endpoint where the webhook request will be sent.
                 example: https://api.external.com/receiveWebhookEvent
-              filter:
+              type:
                 type: string
+                description: >
+                  The type of events to receive.
+                  This field currently only supports an `alerts` value but is included for future expansion.
+                enum:
+                  - alerts
+
+    updateWebhook:
+      content:
+        application/json:
+          schema:
+            type: object
+            description: All fields are optional but at least one field must be provided for the request to be valid.
+            properties:
+              url:
+                type: string
+                format: uri
+                description: The endpoint where the webhook request will be sent.
+                example: https://api.external.com/receiveWebhookEvent
+              type:
+                type: string
+                description: >
+                  The type of events to receive.
+                  This field currently only supports an `alerts` value but is included for future expansion.
+                enum:
+                  - alerts
 
     startStream:
       content:
@@ -974,10 +1001,7 @@ components:
                 type: string
                 description: Additional information about the resolution (Optional unless 'other' is sent for the `resolutionType`)
 
-    toggleLight:
-      # TODO: Fill out what this looks like
-      required: false
-      description: If this body is not provided the default behavior of the request is to "toggle" the state, from `on` to `off` or vice versa.
+    updateLiveUnitLight:
       content:
         application/json:
           schema:
@@ -1372,10 +1396,29 @@ components:
       required:
         - tags
       properties:
-
+        tags:
+          type: array
+          description: List of tags associated with the resolution
+          minimum: 1
+          items:
+            $ref: '#/components/schemas/alertResolutionType'
+        note:
+          type: string
+          description: Additional notes provided with the resolution.
+        userId:
+          type: string
+          format: uuid
+          description: The UUID of the user who resolved the alert.
+        resolvedTimestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted date-time for when the alert was resolved.
+        resolvedInitiatedTimestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted date-time for when the resolution was initiated.
 
     alert:
-      # TODO: Fill out what this looks like
       type: object
       required:
         - id
@@ -1530,6 +1573,7 @@ components:
       required:
         - id
         - url
+        - type
       properties:
         id:
           type: string
@@ -1540,9 +1584,13 @@ components:
           format: uri
           description: The URL to send the webhook event to
           example: https://api.external.com/receiveWebhook
-        filter:
-          description: The filter query applied to incoming alerts
+        type:
           type: string
+          description: >
+            The type of events to receive.
+            This field currently only supports an `alerts` value but is included for future expansion.
+          enum:
+            - alerts
 
     webhooks:
       allOf:
