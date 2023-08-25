@@ -242,9 +242,9 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /liveUnits/{liveUnitId}/lights/{lightId}:
-    patch:
-      operationId: UpdateLiveUnitLight
+  /liveUnits/{liveUnitId}/lights/{lightId}:toggle:
+    post:
+      operationId: ToggleLiveUnitLight
       tags:
         - LiveUnits
       summary: Toggle the status of a light on a live unit
