@@ -1019,35 +1019,38 @@ components:
     camera:
       type: object
       required:
-        - cameraId
+        - id
         - role
         - gpsLocation
         - liveUnitId
         - serialNumber
-        - manufacturerModel
+        - manufacturer
+        - model
       properties:
-        cameraId:
+        id:
           type: string
+          format: uuid
           description: Id of the camera
-          example: Center
         role:
-          type: string
-          description: TBD
-          example: TBD
+          $ref: '#/components/schemas/cameraRole'
         gpsLocation:
           $ref: '#/components/schemas/gpsCoordinates'
         liveUnitId:
           type: string
+          format: uuid
           description: The live unit hosting this camera
-          example: TBD
         serialNumber:
           type: string
           description: Serial number of the camera
-          example: TBD
-        manufacturerModel:
+          example: LVT0000001
+        manufacturer:
           type: string
-          description: Manufacturer and model of the camera
-          example: TBD
+          description: Manufacturer of the camera
+          example: Axis
+        model:
+          type: string
+          description: Model of the camera
+          example: Q6135-LE
 
     cameras:
       allOf:
@@ -1060,27 +1063,7 @@ components:
               type: array
               maxItems: 20
               items:
-                $ref: '#/components/schemas/cameraSimple'
-
-    cameraSimple:
-      type: object
-      required:
-        - cameraId
-        - role
-        - liveUnitId
-      properties:
-        cameraId:
-          type: string
-          description: Identifier for the camera
-          example: 1234
-        role:
-          type: string
-          description: Role of the camera
-          example: Left
-        liveUnitId:
-          type: string
-          description: The live unit hosting this camera
-          example: TDC01111
+                $ref: '#/components/schemas/camera'
 
     cameraPosition:
       type: object
@@ -1117,17 +1100,24 @@ components:
 
     cameraCheckInResponseData:
       type: object
+      required:
+        - currentServerReferenceTime
+        - currentStream
+        - suspended
+        - currentCameraUsers
       properties:
         currentServerReferenceTime:
           type: integer
           format: int64
         currentStream:
-          type: integer
-          format: int64
+          type: string
+          description: Identifier for the current stream
         suspended:
           type: boolean
+          description: Flag indicating if the stream has been suspended
         currentCameraUsers:
           type: array
+          description: List of users currently viewing the stream
           items:
             type: object
             properties:
@@ -1148,15 +1138,19 @@ components:
     liveUnit:
       type: object
       required:
+        - id
         - gpsLocation
-        - liveUnitId
+        - name
       properties:
-        liveUnitId:
+        id:
           type: string
-          description: TBD
-          example: TBD
+          format: uuid
+          description: The id of the live unit
         gpsLocation:
           $ref: '#/components/schemas/gpsCoordinates'
+        name:
+          type: string
+          description: User assigned name for the live unit
 
     liveUnits:
       allOf:
@@ -1195,14 +1189,14 @@ components:
     location:
       type: object
       required:
+        - id
         - gpsLocation
-        - locationId
         - name
       properties:
-        locationId:
+        id:
           type: string
-          description: 'UUID of location'
-          example: '780f17e0-86ec-4a67-b2ad-b3cc61ee55fd'
+          format: uuid
+          description: UUID of location
         gpsLocation:
           $ref: '#/components/schemas/gpsCoordinates'
         name:
@@ -1241,10 +1235,7 @@ components:
         - $ref: '#/components/schemas/paginated'
         - type: array
           items:
-            type: string
-            enum:
-              - 'webrtc'
-              - 'rtsp'
+            $ref: '#/components/schemas/streamProtocol'
 
     streamDataPoly:
       oneOf:
