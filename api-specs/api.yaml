@@ -686,12 +686,11 @@ paths:
         $ref: '#/components/requestBodies/resolveAlert'
       responses:
         202:
-          # TODO: Figure out what to give back
           description: The resolve process has been initiated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/alert'
+                $ref: '#/components/schemas/alertResolution'
         '400':
           $ref: '#/components/responses/400'
         '403':
@@ -987,19 +986,23 @@ components:
                   - rtsp
 
     resolveAlert:
-      # TODO: Fill out what this looks like
       content:
         application/json:
           schema:
             type: object
+            description: Details about an alert resolution
             required:
-              - resolutionType
+              - tags
             properties:
-              resolutionType:
-                $ref: '#/components/schemas/alertResolutionType'
-              notes:
+              tags:
+                type: array
+                description: List of tags associated with the resolution
+                minimum: 1
+                items:
+                  $ref: '#/components/schemas/alertResolutionTag'
+              note:
                 type: string
-                description: Additional information about the resolution (Optional unless 'other' is sent for the `resolutionType`)
+                description: Additional notes provided with the resolution. Optional unless `other` is used in the tags.
 
     updateLiveUnitLight:
       content:
@@ -1395,28 +1398,30 @@ components:
       description: Details about an alert resolution
       required:
         - tags
+        - userId
+        - resolveInitiatedTimestamp
       properties:
         tags:
           type: array
           description: List of tags associated with the resolution
           minimum: 1
           items:
-            $ref: '#/components/schemas/alertResolutionType'
-        note:
-          type: string
-          description: Additional notes provided with the resolution.
+            $ref: '#/components/schemas/alertResolutionTag'
         userId:
           type: string
           format: uuid
           description: The UUID of the user who resolved the alert.
-        resolvedTimestamp:
-          type: string
-          format: date-time
-          description: ISO 8601 formatted date-time for when the alert was resolved.
         resolvedInitiatedTimestamp:
           type: string
           format: date-time
           description: ISO 8601 formatted date-time for when the resolution was initiated.
+        note:
+          type: string
+          description: Additional notes provided with the resolution. Optional unless `other` is used in the tags.
+        resolvedTimestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted date-time for when the alert was resolved.
 
     alert:
       type: object
@@ -1525,7 +1530,7 @@ components:
         - vehicle
         - object
 
-    alertResolutionType:
+    alertResolutionTag:
       type: string
       description: A category for the resolution of the alert
       enum:
@@ -1543,7 +1548,6 @@ components:
         - other
 
     callInfo:
-      # TODO: Verify this information and types
       type: object
       description: Information required to call a live unit
       required:
@@ -1558,12 +1562,10 @@ components:
           example: +1 (111) 111-1111
         extension:
           type: string
-          format: int32
           description: The extension to dial after calling in
           example: 1234
         passcode:
           type: string
-          format: int32
           description: The passcode to enter when prompted
           example: 1234
 
@@ -1607,10 +1609,9 @@ components:
       type: object
       description: The information about a quick sound a live unit can play.
       required:
-        - id # Does this use an id?
+        - id
         - name
       properties:
-        # TODO: Figure out what is in here
         id:
           type: string
           format: uuid
@@ -1643,9 +1644,8 @@ components:
       required:
         - id # Does this use an id?
         - type
-        - status
+        - state
       properties:
-        # TODO: Figure out what is in here
         id:
           type: string
           format: uuid
@@ -1658,8 +1658,10 @@ components:
             - flood
             - camera
         state:
-          # TODO: Is it possible to get the state?
           $ref: '#/components/schemas/lightState'
+        name:
+          type: string
+          description: Optional name to describe the light beyond the type
 
     lights:
       allOf:
