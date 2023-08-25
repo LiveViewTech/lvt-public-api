@@ -1139,15 +1139,25 @@ components:
       type: object
       required:
         - id
+        - clientId
         - gpsLocation
+        - locationId
         - name
       properties:
         id:
           type: string
           format: uuid
           description: The id of the live unit
+        clientId:
+          type: string
+          format: uuid
+          description: The id of the client that owns the live unit
         gpsLocation:
           $ref: '#/components/schemas/gpsCoordinates'
+        locationId:
+          type: string
+          format: uuid
+          description: The id of the location this live unit is associated with
         name:
           type: string
           description: User assigned name for the live unit
