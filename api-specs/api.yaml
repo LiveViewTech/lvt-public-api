@@ -653,6 +653,9 @@ paths:
         - name: alertId
           in: path
           description: The ID of the alert
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: A single alert
@@ -682,6 +685,9 @@ paths:
         - name: alertId
           in: path
           description: The ID of the alert
+          required: true
+          schema:
+            type: string
       requestBody:
         $ref: '#/components/requestBodies/resolveAlert'
       responses:
@@ -762,6 +768,9 @@ paths:
       - name: webhookId
         in: path
         description: The id of the webhook
+        required: true
+        schema:
+          type: string
 
     get:
       operationId: GetWebhook
@@ -1225,7 +1234,7 @@ components:
               type: array
               maxItems: 20
               items:
-                $ref: '#/components/schemas/locations'
+                $ref: '#/components/schemas/location'
 
     streamProtocol:
       type: object
