@@ -1139,7 +1139,6 @@ components:
       type: object
       required:
         - id
-        - clientId
         - gpsLocation
         - locationId
         - name
@@ -1148,10 +1147,6 @@ components:
           type: string
           format: uuid
           description: The id of the live unit
-        clientId:
-          type: string
-          format: uuid
-          description: The id of the client that owns the live unit
         gpsLocation:
           $ref: '#/components/schemas/gpsCoordinates'
         locationId:
@@ -1432,8 +1427,6 @@ components:
         - cameraId
         - cameraRole
         - cause
-        - clientId
-        - clientName
         - liveUnitId
         - liveUnitName
         - locationId
@@ -1457,13 +1450,6 @@ components:
           $ref: '#/components/schemas/cameraRole'
         cause:
           $ref: '#/components/schemas/alertCause'
-        clientId:
-          type: string
-          format: uuid
-          description: The client who owns the live unit that raised the alert
-        clientName:
-          type: string
-          description: The name of the client who owns the live unit that raised the alert
         liveUnitId:
           type: string
           format: uuid
