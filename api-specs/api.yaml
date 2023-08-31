@@ -912,7 +912,7 @@ components:
 
   parameters:
     count:
-      name: count
+      name: limit
       in: query
       description: Limit reply list page size.
       schema:
@@ -1252,10 +1252,14 @@ components:
     streamProtocols:
       allOf:
         - $ref: '#/components/schemas/paginated'
-        - type: array
-          items:
-            $ref: '#/components/schemas/streamProtocol'
-
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/streamProtocol'
     streamDataPoly:
       oneOf:
         - $ref: '#/components/schemas/streamDataRtsp'
@@ -1337,12 +1341,6 @@ components:
           minimum: 0
           description: Number of items returned in the response
           example: 24
-        previousCursorUri:
-          type: string
-          nullable: true
-          format: uri
-          description: Full URL to re-fetch the values of the previous page
-          example: https://api.lvt.com/v1/liveUnits?cursor=eyJhZnRlciI6IjQyIn0=
         nextCursorUri:
           type: string
           nullable: true
