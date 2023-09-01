@@ -912,13 +912,9 @@ components:
         clientCredentials:
           tokenUrl: https://lvt-auth.okta.com/oauth2/aus76o7ru4ivvwtYR697/v1/token
           scopes:
-            liveUnits.read: View a live units data
-            liveUnits.manage: Edit a live units data
-            units.cameras.ptz.manage: Move a cameras position
-            units.cameras.ptz.read: View a cameras position
-            units.cameras.read: View info about a camera
-            units.cameras.stream.read: View a created stream
-            units.cameras.stream.manage: Craete or end live stream
+            basic.liveUnits.manage: Edit a live units data
+            basic.cameras.manage: Edit a cameras data
+            basic.locations.manage: Edit a locations data
   responses:
     '400':
       description: 'Is returned when the request is formatted improperly.'
