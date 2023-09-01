@@ -67,6 +67,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/liveUnit'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -99,6 +101,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/callInfo'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -131,6 +135,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/cameras'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -166,6 +172,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/sounds'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '500':
@@ -198,6 +206,8 @@ paths:
       responses:
         '204':
           description: Success
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -235,6 +245,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/lights'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '500':
@@ -269,6 +281,8 @@ paths:
       responses:
         '204':
           description: Success
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -303,6 +317,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/camera'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -406,6 +422,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/streamProtocols'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -478,6 +496,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/cameraCheckInResponseData'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -510,6 +530,8 @@ paths:
       responses:
         '204':
           description: Success
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -567,6 +589,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/location'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -602,6 +626,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/liveUnits'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -663,6 +689,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/alert'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -787,6 +815,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook'
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -835,6 +865,8 @@ paths:
       responses:
         '204':
           description: Success
+        '400':
+          $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
