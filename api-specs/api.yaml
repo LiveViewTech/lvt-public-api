@@ -1062,7 +1062,6 @@ components:
       required:
         - id
         - role
-        - gpsLocation
         - liveUnitId
         - serialNumber
         - manufacturer
@@ -1074,8 +1073,6 @@ components:
           description: Id of the camera
         role:
           $ref: '#/components/schemas/cameraRole'
-        gpsLocation:
-          $ref: '#/components/schemas/gpsCoordinates'
         liveUnitId:
           type: string
           format: uuid
