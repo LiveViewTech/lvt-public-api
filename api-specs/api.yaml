@@ -430,16 +430,18 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
 
   /cameras/{cameraId}/streams:
     post:
       operationId: StartStream
       tags:
         - Cameras
-      summary: Start or get an existing stream
+      summary: Start a stream
       description: >
         **Phase 1**:
-        Starts or gets an existing stream and returns stream data for the camera
+        Starts a stream and returns stream data for the camera
       parameters:
         - in: path
           name: cameraId
@@ -462,10 +464,14 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
         '503':
           $ref: '#/components/responses/503'
+        default:
+          $ref: '#/components/responses/defaultError'
 
   /cameras/{cameraId}/streams/{streamId}:checkIn:
     post:
@@ -502,8 +508,12 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
 
   /cameras/{cameraId}/streams/{streamId}:
     delete:
@@ -538,6 +548,8 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
 
   /locations:
     get:
@@ -915,7 +927,7 @@ components:
             $ref: '#/components/schemas/error'
 
     '409':
-      description: 'Specified resource token is missing or expired.'
+      description: 'The current state of the server does not allow for the operation.'
       content:
         application/json:
           schema:
@@ -1139,39 +1151,34 @@ components:
     cameraCheckInResponseData:
       type: object
       required:
-        - currentServerReferenceTime
-        - currentStream
-        - suspended
+        - streamId
         - currentCameraUsers
       properties:
-        currentServerReferenceTime:
-          type: integer
-          format: int64
-        currentStream:
+        streamId:
           type: string
           description: Identifier for the current stream
-        suspended:
-          type: boolean
-          description: Flag indicating if the stream has been suspended
         currentCameraUsers:
           type: array
           description: List of users currently viewing the stream
           items:
             type: object
+            required:
+              - sessionStartTime
             properties:
-              camUserId:
-                type: string
-                format: uuid
               sessionStartTime:
-                type: integer
-                format: int64
+                type: string
+                format: date-time
+                description: ISO 8601 formatted timestamp of when the user started streaming
               userId:
                 type: string
                 format: uuid
+                description: UUID of the user viewing the stream
               username:
                 type: string
+                description: System username of the user viewing the stream
               name:
                 type: string
+                description: Human readable name of the user viewing the stream
 
     liveUnit:
       type: object
