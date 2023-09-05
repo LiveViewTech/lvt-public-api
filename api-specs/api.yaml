@@ -438,6 +438,7 @@ paths:
       operationId: StartStream
       tags:
         - Cameras
+        - Streams
       summary: Start a stream
       description: >
         **Phase 1**:
@@ -473,22 +474,16 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /cameras/{cameraId}/streams/{streamId}:checkIn:
+  /streams/{streamId}:checkIn:
     post:
       operationId: CheckIn
       tags:
-        - Cameras
+        - Streams
       summary: Check in streaming for the camera
       description: >
         **Phase 1**:
         Check in streaming for the camera
       parameters:
-        - in: path
-          name: cameraId
-          description: Camera to operate on.
-          required: true
-          schema:
-            type: string
         - in: path
           name: streamId
           description: The specific stream record id
@@ -515,22 +510,16 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /cameras/{cameraId}/streams/{streamId}:
+  /streams/{streamId}:
     delete:
       operationId: CheckOut
       tags:
-        - Cameras
+        - Streams
       summary: Check out streaming for the camera
       description: >
         **Phase 1**:
         Check out streaming for the camera
       parameters:
-        - in: path
-          name: cameraId
-          description: Camera to operate on.
-          required: true
-          schema:
-            type: string
         - in: path
           name: streamId
           description: The specific stream record id
