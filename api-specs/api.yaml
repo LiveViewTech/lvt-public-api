@@ -491,12 +491,8 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        '204':
           description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/cameraCheckInResponseData'
         '400':
           $ref: '#/components/responses/400'
         '403':
@@ -1136,38 +1132,6 @@ components:
           format: int32
           minimum: -1
           maximum: 10000
-
-    cameraCheckInResponseData:
-      type: object
-      required:
-        - streamId
-        - currentCameraUsers
-      properties:
-        streamId:
-          type: string
-          description: Identifier for the current stream
-        currentCameraUsers:
-          type: array
-          description: List of users currently viewing the stream
-          items:
-            type: object
-            required:
-              - sessionStartTime
-            properties:
-              sessionStartTime:
-                type: string
-                format: date-time
-                description: ISO 8601 formatted timestamp of when the user started streaming
-              userId:
-                type: string
-                format: uuid
-                description: UUID of the user viewing the stream
-              username:
-                type: string
-                description: System username of the user viewing the stream
-              name:
-                type: string
-                description: Human readable name of the user viewing the stream
 
     liveUnit:
       type: object
