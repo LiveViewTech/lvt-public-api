@@ -430,16 +430,19 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
 
   /cameras/{cameraId}/streams:
     post:
       operationId: StartStream
       tags:
         - Cameras
-      summary: Start or get an existing stream
+        - Streams
+      summary: Start a stream
       description: >
         **Phase 1**:
-        Starts or gets an existing stream and returns stream data for the camera
+        Starts a stream and returns stream data for the camera
       parameters:
         - in: path
           name: cameraId
@@ -462,27 +465,25 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
         '503':
           $ref: '#/components/responses/503'
+        default:
+          $ref: '#/components/responses/defaultError'
 
-  /cameras/{cameraId}/streams/{streamId}:checkIn:
+  /streams/{streamId}:checkIn:
     post:
       operationId: CheckIn
       tags:
-        - Cameras
+        - Streams
       summary: Check in streaming for the camera
       description: >
         **Phase 1**:
         Check in streaming for the camera
       parameters:
-        - in: path
-          name: cameraId
-          description: Camera to operate on.
-          required: true
-          schema:
-            type: string
         - in: path
           name: streamId
           description: The specific stream record id
@@ -490,37 +491,31 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        '204':
           description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/cameraCheckInResponseData'
         '400':
           $ref: '#/components/responses/400'
         '403':
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
 
-  /cameras/{cameraId}/streams/{streamId}:
+  /streams/{streamId}:
     delete:
       operationId: CheckOut
       tags:
-        - Cameras
+        - Streams
       summary: Check out streaming for the camera
       description: >
         **Phase 1**:
         Check out streaming for the camera
       parameters:
-        - in: path
-          name: cameraId
-          description: Camera to operate on.
-          required: true
-          schema:
-            type: string
         - in: path
           name: streamId
           description: The specific stream record id
@@ -538,6 +533,8 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
 
   /locations:
     get:
@@ -915,7 +912,7 @@ components:
             $ref: '#/components/schemas/error'
 
     '409':
-      description: 'Specified resource token is missing or expired.'
+      description: 'The current state of the server does not allow for the operation.'
       content:
         application/json:
           schema:
@@ -1135,43 +1132,6 @@ components:
           format: int32
           minimum: -1
           maximum: 10000
-
-    cameraCheckInResponseData:
-      type: object
-      required:
-        - currentServerReferenceTime
-        - currentStream
-        - suspended
-        - currentCameraUsers
-      properties:
-        currentServerReferenceTime:
-          type: integer
-          format: int64
-        currentStream:
-          type: string
-          description: Identifier for the current stream
-        suspended:
-          type: boolean
-          description: Flag indicating if the stream has been suspended
-        currentCameraUsers:
-          type: array
-          description: List of users currently viewing the stream
-          items:
-            type: object
-            properties:
-              camUserId:
-                type: string
-                format: uuid
-              sessionStartTime:
-                type: integer
-                format: int64
-              userId:
-                type: string
-                format: uuid
-              username:
-                type: string
-              name:
-                type: string
 
     liveUnit:
       type: object
