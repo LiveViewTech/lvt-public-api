@@ -4,7 +4,7 @@ info:
   description: Public REST API - Beta
   version: 0.5.0
 servers:
-  - url: 'https://api.prd.lvt.services'
+  - url: 'https://api.lvt.com/v1'
     description: Production beta version
 security:
   - OAuth2: [ ]
