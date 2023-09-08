@@ -1324,7 +1324,7 @@ components:
         - nextCursorUri
         - totalResults
       properties:
-        itemsPerPage:
+        itemsCount:
           type: integer
           format: int32
           minimum: 0
