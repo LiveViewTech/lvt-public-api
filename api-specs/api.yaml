@@ -120,7 +120,7 @@ paths:
     get:
       operationId: GetLiveUnitCameras
       security:
-        - OAuth2: [basic.liveUnits.manage]
+        - OAuth2: [basic.cameras.manage]
       tags:
         - LiveUnits
       summary: List of user accessible cameras hosted by the given liveUnit.
@@ -628,7 +628,7 @@ paths:
     get:
       operationId: GetLocationLiveUnits
       security:
-        - OAuth2: [basic.locations.manage]
+        - OAuth2: [basic.liveUnits.manage]
       tags:
         - Locations
       summary: List of user accessible live units at the given location.
