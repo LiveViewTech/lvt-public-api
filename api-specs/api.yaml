@@ -1297,11 +1297,16 @@ components:
           example: 'rtsp'
         refreshInterval:
           type: integer
+          description: Interval in milliseconds in which the /stream/{streamId}:checkIn request should be called
           format: int32
         streamingUrl:
           type: string
+          description: rtsp url to access the stream
+          format: uri
         streamId:
           type: string
+          description: Identifier for the current stream
+          format: uuid
 
     streamDataWebrtc:
       type: object
