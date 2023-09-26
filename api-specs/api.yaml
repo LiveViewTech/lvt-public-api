@@ -21,7 +21,7 @@ paths:
     get:
       operationId: GetLiveUnits
       security:
-        - OAuth2: [account.liveUnits.manage]
+        - OAuth2: [ account.liveUnits.manage ]
       tags:
         - LiveUnits
       summary: This endpoint returns all the live units accessible by the specified client.
@@ -57,7 +57,7 @@ paths:
     get:
       operationId: GetLiveUnit
       security:
-        - OAuth2: [account.liveUnits.manage]
+        - OAuth2: [ account.liveUnits.manage ]
       tags:
         - LiveUnits
       summary: Details for the specified live unit.
@@ -120,7 +120,7 @@ paths:
     get:
       operationId: GetLiveUnitCameras
       security:
-        - OAuth2: [account.cameras.manage]
+        - OAuth2: [ account.cameras.manage ]
       tags:
         - LiveUnits
       summary: List of user accessible cameras hosted by the given liveUnit.
@@ -311,7 +311,7 @@ paths:
     get:
       operationId: GetLiveUnitCamera
       security:
-        - OAuth2: [account.cameras.manage]
+        - OAuth2: [ account.cameras.manage ]
       tags:
         - Cameras
       summary: Details of selected camera.
@@ -345,7 +345,7 @@ paths:
     get:
       operationId: GetCameraPosition
       security:
-        - OAuth2: [account.cameras.manage]
+        - OAuth2: [ account.cameras.manage ]
       tags:
         - Cameras
       summary: Returns the selected camera's PTZF values
@@ -375,7 +375,7 @@ paths:
     put:
       operationId: UpdateCameraPosition
       security:
-        - OAuth2: [account.cameras.manage]
+        - OAuth2: [ account.cameras.manage ]
       tags:
         - Cameras
       summary: Updates the selected camera's PTZF values
@@ -413,7 +413,7 @@ paths:
     get:
       operationId: GetProtocols
       security:
-        - OAuth2: [account.cameras.manage]
+        - OAuth2: [ account.cameras.manage ]
       tags:
         - Cameras
       summary: Returns list of protocols supported
@@ -451,7 +451,7 @@ paths:
     post:
       operationId: StartStream
       security:
-        - OAuth2: [account.cameras.manage]
+        - OAuth2: [ account.cameras.manage ]
       tags:
         - Cameras
         - Streams
@@ -494,7 +494,7 @@ paths:
     post:
       operationId: CheckIn
       security:
-        - OAuth2: [account.cameras.manage]
+        - OAuth2: [ account.cameras.manage ]
       tags:
         - Streams
       summary: Check in streaming for the camera
@@ -528,7 +528,7 @@ paths:
     delete:
       operationId: CheckOut
       security:
-        - OAuth2: [account.cameras.manage]
+        - OAuth2: [ account.cameras.manage ]
       tags:
         - Streams
       summary: Check out streaming for the camera
@@ -560,7 +560,7 @@ paths:
     get:
       operationId: GetLocations
       security:
-        - OAuth2: [account.locations.manage]
+        - OAuth2: [ account.locations.manage ]
       tags:
         - Locations
       summary: List of locations for the user's client
@@ -596,7 +596,7 @@ paths:
     get:
       operationId: GetLocation
       security:
-        - OAuth2: [account.locations.manage]
+        - OAuth2: [ account.locations.manage ]
       tags:
         - Locations
       summary: Details for the specified location.
@@ -625,7 +625,7 @@ paths:
     get:
       operationId: GetLocationLiveUnits
       security:
-        - OAuth2: [account.liveUnits.manage]
+        - OAuth2: [ account.liveUnits.manage ]
       tags:
         - Locations
       summary: List of user accessible live units at the given location.
@@ -682,6 +682,32 @@ paths:
                 $ref: '#/components/schemas/alerts'
         '400':
           $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts/types:
+    get:
+      operationId: GetAlertTypes
+      tags:
+        - Alerts
+      summary: Get alert types
+      description: >
+        **Phase 2**:
+        Get all valid enumeration types relevant to an alert.
+        This includes alert causes, alert subjects (sub-classification of the "intrusion" alert cause), and resolution tags.
+        <br/><br/>
+        This endpoint will be mostly static however, as new values become supported they will be added to this response.
+      responses:
+        200:
+          description: An object containing valid enum values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/alertTypes'
         '403':
           $ref: '#/components/responses/403'
         '500':
@@ -1066,7 +1092,8 @@ components:
                 description: List of tags associated with the resolution
                 minimum: 1
                 items:
-                  $ref: '#/components/schemas/alertResolutionTag'
+                  type: string
+                  example: theft
               note:
                 type: string
                 description: Additional notes provided with the resolution. Optional unless `other` is used in the tags.
@@ -1437,7 +1464,8 @@ components:
           description: List of tags associated with the resolution
           minimum: 1
           items:
-            $ref: '#/components/schemas/alertResolutionTag'
+            type: string
+            example: theft
         userId:
           type: string
           format: uuid
@@ -1486,7 +1514,8 @@ components:
         cameraRole:
           $ref: '#/components/schemas/cameraRole'
         cause:
-          $ref: '#/components/schemas/alertCause'
+          type: string
+          example: loitering
         clientId:
           type: string
           format: uuid
@@ -1521,9 +1550,11 @@ components:
             - resolved
             - resolveInitiated
         subject:
-          $ref: '#/components/schemas/alertSubject'
+          type: string
+          example: human
         resolution:
-          $ref: '#/components/schemas/alertResolution'
+          type: string
+          example: accident
 
     alerts:
       allOf:
@@ -1538,45 +1569,53 @@ components:
               items:
                 $ref: '#/components/schemas/alert'
 
-    alertCause:
-      type: string
-      description: What triggered the alert
-      enum:
-        # TODO: What casing should we use?
-        - mastMovement
-        - baseEntry
-        - lowVoltageDisconnect
-        - intrusion
-        - loitering
-        - potentialGunShotDetection
-        - other
-
-    alertSubject:
-      type: string
-      nullable: true
-      description: An optional sub-classification for an alert cause
-      enum:
-        # TODO: What casing should we use?
-        - human
-        - vehicle
-        - object
-
-    alertResolutionTag:
-      type: string
-      description: A category for the resolution of the alert
-      enum:
-        # TODO: What casing should we use?
-        - accident
-        - animal
-        - deterredCrime
-        - employeeVendor
-        - suspiciousActivity
-        - tampering
-        - loitering
-        - theft
-        - technicalIssue
-        - violence
-        - other
+    alertTypes:
+      type: object
+      description: Object containing enum values
+      required:
+        - alertCauses
+        - alertSubjects
+        - resolutionTags
+      properties:
+        alertCauses:
+          type: array
+          description: Valid values that can be returned in the `cause` field of an alert response.
+          items:
+            type: string
+          example:
+            - mastMovement
+            - baseEntry
+            - lowVoltageDisconnect
+            - intrusion
+            - loitering
+            - potentialGunShotDetection
+            - other
+        alertSubjects:
+          type: array
+          description: Valid values that can be returned in the `subject` field of an alert response with the cause `intrusion`.
+          items:
+            type: string
+          example:
+            - human
+            - vehicle
+            - object
+        resolutionTags:
+          type: array
+          description: Valid values that can be sent in the `tags` field of an alert resolution request.
+          items:
+            type: string
+          example:
+            - accident
+            - animal
+            - deterredCrime
+            - employeeVendor
+            - suspiciousActivity
+            - tampering
+            - loitering
+            - theft
+            - technicalIssue
+            - violence
+            - other
 
     callInfo:
       type: object
