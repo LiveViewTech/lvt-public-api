@@ -1508,6 +1508,8 @@ components:
         clientName:
           type: string
           description: The name of the client who owns the live unit that raised the alert
+        coordinates:
+          $ref: '#/components/schemas/gpsCoordinates'
         liveUnitId:
           type: string
           format: uuid
