@@ -1543,8 +1543,7 @@ components:
           type: string
           example: human
         resolution:
-          type: string
-          example: accident
+          $ref: '#/components/schemas/alertResolution'
 
     alerts:
       allOf:
