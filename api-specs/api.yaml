@@ -1092,7 +1092,8 @@ components:
                 description: List of tags associated with the resolution
                 minimum: 1
                 items:
-                  $ref: '#/components/schemas/alertResolutionTag'
+                  type: string
+                  example: theft
               note:
                 type: string
                 description: Additional notes provided with the resolution. Optional unless `other` is used in the tags.
@@ -1463,7 +1464,8 @@ components:
           description: List of tags associated with the resolution
           minimum: 1
           items:
-            $ref: '#/components/schemas/alertResolutionTag'
+            type: string
+            example: theft
         userId:
           type: string
           format: uuid
@@ -1512,7 +1514,8 @@ components:
         cameraRole:
           $ref: '#/components/schemas/cameraRole'
         cause:
-          $ref: '#/components/schemas/alertCause'
+          type: string
+          example: loitering
         clientId:
           type: string
           format: uuid
@@ -1547,9 +1550,11 @@ components:
             - resolved
             - resolveInitiated
         subject:
-          $ref: '#/components/schemas/alertSubject'
+          type: string
+          example: human
         resolution:
-          $ref: '#/components/schemas/alertResolution'
+          type: string
+          example: accident
 
     alerts:
       allOf:
@@ -1611,46 +1616,6 @@ components:
             - technicalIssue
             - violence
             - other
-
-    alertCause:
-      type: string
-      description: What triggered the alert
-      enum:
-        # TODO: What casing should we use?
-        - mastMovement
-        - baseEntry
-        - lowVoltageDisconnect
-        - intrusion
-        - loitering
-        - potentialGunShotDetection
-        - other
-
-    alertSubject:
-      type: string
-      nullable: true
-      description: An optional sub-classification for an alert cause
-      enum:
-        # TODO: What casing should we use?
-        - human
-        - vehicle
-        - object
-
-    alertResolutionTag:
-      type: string
-      description: A category for the resolution of the alert
-      enum:
-        # TODO: What casing should we use?
-        - accident
-        - animal
-        - deterredCrime
-        - employeeVendor
-        - suspiciousActivity
-        - tampering
-        - loitering
-        - theft
-        - technicalIssue
-        - violence
-        - other
 
     callInfo:
       type: object
