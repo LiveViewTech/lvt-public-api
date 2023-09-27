@@ -37,7 +37,7 @@ to access different endpoints of the API are documented in the [API Specificatio
 
 ```shell
   curl --request POST \
-   --url URL=https://https://api.lvt.com/oauth2/v1/token \
+   --url URL=https://api.lvt.com/oauth2/v1/token \
    --header 'accept: application/json' \
    --header 'authorization: Basic YOUR_TOKEN_HERE' \
    --data 'grant_type=client_credentials' \
