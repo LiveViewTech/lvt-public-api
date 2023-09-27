@@ -31,7 +31,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of liveUnits.
@@ -133,7 +132,6 @@ paths:
             type: string
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of cameras.
@@ -170,7 +168,6 @@ paths:
             type: string
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of sounds.
@@ -243,7 +240,6 @@ paths:
             type: string
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of lights.
@@ -570,7 +566,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of locations.
@@ -641,7 +636,6 @@ paths:
             type: string
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of live units.
@@ -823,7 +817,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
       responses:
         '200':
           description: A list of webhooks.
@@ -1415,21 +1408,16 @@ components:
       type: object
       required:
         - id
-        - alertId
         - cameraId
         - cameraRole
         - mimeType
-        - mediaTimestamp
+        - timestamp
         - url
       properties:
         id:
           type: string
           format: uuid
           description: The ID of the media item
-        alertId:
-          type: string
-          format: uuid
-          description: The ID of the alert the media is associated with
         cameraId:
           type: string
           format: uuid
@@ -1442,7 +1430,7 @@ components:
           format: mime
           description: The mime type of the media
           example: image/jpeg
-        mediaTimestamp:
+        timestamp:
           type: string
           format: date-time
           description: ISO 8601 formatted date-time string of when the media was captured
@@ -1486,16 +1474,13 @@ components:
       type: object
       required:
         - id
-        - alertTimestamp
+        - timestamp
         - cameraId
         - cameraRole
         - cause
         - clientId
-        - clientName
         - liveUnitId
-        - liveUnitName
         - locationId
-        - locationName
         - media
         - state
       properties:
@@ -1503,7 +1488,7 @@ components:
           type: string
           format: uuid
           description: The id of the alert
-        alertTimestamp:
+        timestamp:
           type: string
           format: date-time
           description: ISO 8601 formatted date-time for when the alert was raised
@@ -1523,6 +1508,8 @@ components:
         clientName:
           type: string
           description: The name of the client who owns the live unit that raised the alert
+        coordinates:
+          $ref: '#/components/schemas/gpsCoordinates'
         liveUnitId:
           type: string
           format: uuid
@@ -1537,6 +1524,9 @@ components:
         locationName:
           type: string
           description: The name of the location that raised the alert
+        locationTimezone:
+          type: string
+          description: The timezone of the location that raised the alert
         media:
           type: array
           description: A list of media that were captured for the alert
@@ -1553,8 +1543,7 @@ components:
           type: string
           example: human
         resolution:
-          type: string
-          example: accident
+          $ref: '#/components/schemas/alertResolution'
 
     alerts:
       allOf:
