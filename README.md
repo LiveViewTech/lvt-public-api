@@ -30,14 +30,14 @@ The resulting value is your authentication token.
 
 2. Using your authentication token make a call to LVT's Okta authorization server to obtain an API access token.
 
-* https://lvt-auth.okta.com/oauth2/aus76o7ru4ivvwtYR697/v1/token
+* https://api.lvt.com/oauth2/v1/token
 
 When making this call you must specify a comma separated list of scopes you want your token to have. The scopes required
 to access different endpoints of the API are documented in the [API Specification](./api-specs/api.yaml).
 
 ```shell
   curl --request POST \
-   --url URL=https://lvt-auth.okta.com/oauth2/aus76o7ru4ivvwtYR697/v1/token \
+   --url URL=https://api.lvt.com/oauth2/v1/token \
    --header 'accept: application/json' \
    --header 'authorization: Basic YOUR_TOKEN_HERE' \
    --data 'grant_type=client_credentials' \
