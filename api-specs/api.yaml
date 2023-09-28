@@ -1437,7 +1437,8 @@ components:
         url:
           type: string
           format: url
-          description: Signed URL to access the media. Default expiration is TBD # TODO: Determine this
+          description: Signed URL to access the media. Default expiration is 2 hours.
+          example: 'https://cdn.lvt.com/alerts/security/202/20230928150412/1121.jpg?Expires=1695924513&Key-Pair-Id=MZ1Z1ZZNSPSL2&Signature=3fWTV-M0bAdXiFhjbLSU~iMKDAcbHKxxZfEOZJT3t2031cfrqNWfizjxyilmSNiuxxq39vHPdQQO3cF9WKKpVcPczVFcTUbEAUyDVA12akUexegBomwPkf4PcJgnEQr~-vp6wtzUawYHPYpNaH32xSaWKGxqOleq-c8F~5~4kI6MjuFFZylKLAdzQ1Oan4ujlnBfpbQPWKU-pBT8FotaefzjAZLGtzUtR37oNRK0j687p6vZyQIqsg~r-MDY5ZJZBZk3G02Dl0LkpcpzHf-xI~IHGhlQ4B~9JLDeFLCLrvFC47sOww7We8J4QkI8RyuoetV3ChegywIHVM0U1qFT0Q__'
 
     alertResolution:
       type: object

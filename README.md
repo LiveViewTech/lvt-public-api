@@ -133,6 +133,12 @@ curl --request DELETE \
 When successful this will return a `204` status code with no body. All subsequent requests to check in or delete the same stream ID will result in a `404` (This is the same
 behavior as letting a stream time out).
 
+## Alerts
+
+### Media
+Media associated with an alert will either be a mp4 video clip or a jpg image. The url associated with alert media is signed when the request is issued and expires after 2 
+hours. If the request is made again, a new signed url will be generated.
+
 # Disclaimer
 
 LiveView Technologies makes no representations or warranties with respect to this publication and specifically disclaims any expressed or implied warranties of merchantability or
