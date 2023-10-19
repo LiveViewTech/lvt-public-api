@@ -471,6 +471,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/streamDataPoly'
+              examples:
+                rtsp:
+                  value:
+                    protocol: 'rtsp'
+                    streamId: '96129d6f-7143-45d7-a8ea-3081a11fc4b5'
+                    refreshInterval: 10000
+                    streamingUrl: string
+                webrtc:
+                  value:
+                    protocol: 'webrtc'
+                    streamId: '96129d6f-7143-45d7-a8ea-3081a11fc4b5'
+                    refreshInterval: 10000
+                    signalUrl: wss://primary.camerarelay.com/websocket-session.json
+                    streamInfo: {}
         '400':
           $ref: '#/components/responses/400'
         '403':
@@ -1335,12 +1349,22 @@ components:
           type: string
           description: A short name for the streaming protocol
           example: 'webrtc'
-        streamingServer:
+        refreshInterval:
+          type: integer
+          description: Interval in milliseconds in which the /stream/{streamId}:checkIn request should be called
+          format: int32
+        signalUrl:
           type: string
-        streamName:
-          type: string
+          description: web socket url to the signal server
+          format: uri
         streamId:
+          description: Identifier for the current stream
           type: string
+          format: uuid
+        streamInfo:
+          description: Data that is passed to to the signal server
+          type: object
+          additionalProperties: true
 
     error:
       type: object

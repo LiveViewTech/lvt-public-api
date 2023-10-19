@@ -133,6 +133,9 @@ curl --request DELETE \
 When successful this will return a `204` status code with no body. All subsequent requests to check in or delete the same stream ID will result in a `404` (This is the same
 behavior as letting a stream time out).
 
+### Streaming webrtc
+[streaming with webrtc](./examples/webrtc/README.md)
+
 ## Alerts
 
 ### Media
