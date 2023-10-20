@@ -680,7 +680,37 @@ paths:
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/filter'
+        - name: state
+          in: query
+          description: >
+            Filters the alerts response to only include alerts with `state` values that are included in the provided comma separated list.
+            You can get a list of valid states from `/alerts/types`.
+          example: resolved,resolving
+        - name: startTimestamp
+          in: query
+          description: Filters alerts where the `timestamp` is before the provided `startTimestamp`.
+          example: 2023-01-01T12:00:00.000Z
+        - name: endTimestamp
+          in: query
+          description: Filters alerts where the `timestamp` is after the provided `endTimestamp`.
+          example: 2023-01-01T12:00:00.000Z
+        - name: locationId
+          in: query
+          description: Filters the alerts response to only include alerts with `locationId` values that are included in the provided comma separated list.
+          example: 460092aa-aeec-4bef-b206-1a3a4b4dc4d9,cf2c38d9-ee33-4ce4-a6d6-82ddec364c76
+        - name: cause
+          in: query
+          description: >
+            Filters the alerts response to only include alerts with `cause` values that are included in the provided comma separated list.
+            You can get a list of valid causes from `/alerts/types`.
+          example: intrusion,loitering
+        - name: subject
+          in: query
+          description: >
+            Filters the alerts response to only include alerts with `subject` values that are included in the provided comma separated list.
+            Use "null" to include alerts with `null` subjects.
+            You can get a list of valid subjects from `/alerts/types`.
+          example: human,vehicle,null
       responses:
         200:
           description: A list of alerts.
@@ -1016,15 +1046,6 @@ components:
       name: cursor
       in: query
       description: Used to populate a paged response. Do not provide on initial request. Reserved for use by backend to paginate.
-      schema:
-        type: string
-
-    filter:
-      name: filter
-      in: query
-      description: >
-        **Phase 2**:
-        Filter query for narrowing collection results
       schema:
         type: string
 
