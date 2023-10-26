@@ -281,8 +281,22 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/updateLiveUnitLight'
       responses:
-        '204':
-          description: Success
+        '200':
+          description: toggle response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - resetTime
+                  - state
+                properties:
+                  resetTime:
+                    type: number
+                    description: Milliseconds until the light will revert to its previous state. If 0, it will remain indefinitely.
+                    example: 60000
+                  state:
+                    $ref: '#/components/schemas/lightState'
         '400':
           $ref: '#/components/responses/400'
         '403':
@@ -1149,7 +1163,7 @@ components:
             required:
               - status
             properties:
-              status:
+              state:
                 $ref: '#/components/schemas/lightState'
 
   schemas:
@@ -1757,6 +1771,7 @@ components:
       enum:
         - 'on'
         - 'off'
+        - 'unavailable'
 
     light:
       type: object
