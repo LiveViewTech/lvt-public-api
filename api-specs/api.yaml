@@ -1640,6 +1640,7 @@ components:
         - alertCauses
         - alertSubjects
         - resolutionTags
+        - alertStates
       properties:
         alertCauses:
           type: array
@@ -1680,6 +1681,15 @@ components:
             - technicalIssue
             - violence
             - other
+        alertStates:
+          type: array
+          description: Valid values that represent the possible state of an alert.
+          items:
+            type: string
+          example:
+            - unresolved
+            - resolving
+            - resolved
 
     callInfo:
       type: object
