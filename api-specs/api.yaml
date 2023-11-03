@@ -701,7 +701,7 @@ paths:
             You can get a list of valid states from `/alerts/types`.
           schema:
             type: string
-            example: resolved,resolving
+            example: resolved
         - name: startTimestamp
           in: query
           description: ISO 8601 formatted string. Filters alerts where the `timestamp` is after the provided `startTimestamp`.
@@ -1688,7 +1688,6 @@ components:
             type: string
           example:
             - unresolved
-            - resolving
             - resolved
 
     callInfo:
