@@ -47,7 +47,7 @@ const getOffer = () => {
     ws.send(JSON.stringify(message));
 }
 
-ws.on('open', () => {
+ws.addEventListener('open', () => {
     getOffer();
 });
 ```
@@ -56,7 +56,7 @@ Sometimes, it can take a couple seconds to establish a stream with the camera,
 so the signal server will reply it's not ready, the request will need to be resent.
 
 ```ts
-ws.on('message', (messageEvent) => {
+ws.addEventListener('message', (messageEvent) => {
     const data = JSON.parse(messageEvent.data);
     const status = Number(data.status);
 
@@ -83,7 +83,7 @@ needs to be added to the `streamInfo` from the `POST /camera/{cameraId}/streams`
 ```ts
 const peerConnection = new RTCPeerConnection();
 
-ws.on('message', (message) => {
+ws.addEventListener('message', (message) => {
     const data = JSON.parse(message.data);
     const status = Number(data.status);
 
@@ -145,7 +145,7 @@ if (data.iceCandidates) {
 
 #### All together
 ```ts
-ws.on('message', (message) => {
+ws.addEventListener('message', (message) => {
     const data = JSON.parse(message.data);
     const status = Number(data.status);
 
@@ -187,13 +187,16 @@ ws.on('message', (message) => {
 When a new track is ready, the track event will be sent.
 
 ```ts
-peerConnection.on('track', (event) => {
+peerConnection.addEventListener('track', (event) => {
     const [ stream ] = event.streams;
 
     const videoEm = document.getElementById('webrtc-video');
     videoEm.srcObject = stream;
 });
 ```
+
+Note that autoplaying a video may be blocked unless you have muted the video.
+https://developer.mozilla.org/en-US/docs/Web/Media/Autoplay_guide#autoplay_availability
 
 ### more information
 More details on establishing webrtc connections:

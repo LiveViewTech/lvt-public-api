@@ -72,7 +72,10 @@ documentation](https://developer.okta.com/docs/guides/implement-grant-type/clien
 
 ## Streaming
 
-### Starting a stream
+&#42; Available protocols for the camera can be found by the `GET /cameras/{cameraId}/protocols` endpoint.
+
+### Streaming rtsp
+#### Starting a stream
 
 To start a stream, make the following request:
 
@@ -83,9 +86,6 @@ curl --request POST \
  --header 'authorization: Bearer YOUR_ACCESS_TOKEN_HERE'
  --data '{ "protocol": "rtsp" }'
 ```
-
-&#42; Currently `rtsp` is the only supported protocol. In the future, the valid protocols can be viewed using the `GET /cameras/{cameraId}/protocols` endpoint.
-
 This request will start a stream internally and respond with a `200` status code and a body that looks something like this:
 
 ```json
@@ -99,7 +99,7 @@ This request will start a stream internally and respond with a `200` status code
 The `streamingUrl` can then be provided to a player to start a stream. **The stream will automatically timeout after a certain period of time.** This can be prevented by checking
 in to the stream using the `streamId` provided in the response.
 
-### Refreshing a stream
+#### Refreshing a stream
 
 The `refreshInterval` returned from a successful start stream response is the recommended interval in milliseconds for users to check into the stream. A check in request for the
 above example would be as follows:
@@ -116,7 +116,7 @@ A successful check in will respond with a `204` status code and no body. This me
 
 &#42; The actual timeout duration is longer than the recommended refresh interval so one or two missed check ins will not immediately drop the stream.
 
-### Ending a stream
+#### Ending a stream
 
 This API provides a `DELETE /streams/STREAM_ID` to check out of a stream, thus indicating that the API user is no longer viewing the stream. This behavior is not much different
 from
