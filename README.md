@@ -142,6 +142,13 @@ behavior as letting a stream time out).
 Media associated with an alert will either be a mp4 video clip or a jpg image. The url associated with alert media is signed when the request is issued and expires after 2 
 hours. If the request is made again, a new signed url will be generated.
 
+# API Rate Limits and Quotas
+
+The API request rate is limited to 20 requests per second. Exceeding this limit may result in degredation of performance
+or temporary suspension of service.
+
+The total number of requests cannot exceed 100,000 per day. 
+
 # Disclaimer
 
 LiveView Technologies makes no representations or warranties with respect to this publication and specifically disclaims any expressed or implied warranties of merchantability or
