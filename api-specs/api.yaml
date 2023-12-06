@@ -1481,17 +1481,12 @@ components:
     alertMedia:
       type: object
       required:
-        - id
         - cameraId
         - cameraRole
         - mimeType
         - timestamp
         - url
       properties:
-        id:
-          type: string
-          format: uuid
-          description: The ID of the media item
         cameraId:
           type: string
           format: uuid
