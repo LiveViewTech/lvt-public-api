@@ -14,7 +14,11 @@ tags:
   - name: LiveUnits
     description: Operations on LiveUnits
   - name: Locations
-    description: Operations on locations
+    description: Operations on locations  
+  - name: Webhooks
+    description: Operations on webhooks  
+  - name: PublicKeys
+    description: Operations related to outbound message verification
 
 paths:
   /liveUnits:
@@ -1052,6 +1056,40 @@ paths:
         '500':
           $ref: '#/components/responses/500'
         default:
+          $ref: '#/components/responses/defaultError'  
+          
+  /publicKeys/{publicKeyId}:
+    get:
+      summary: Get a Public Key
+      description: Get a Public Key with the provided ID.
+      tags: [ PublicKeys ]
+      parameters:
+        - name: publicKeyId
+          in: path
+          required: true
+          description: The UUID of the specific public key to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+      responses:
+        200:
+          description: OK
+          content:
+            application/x-pem-file:
+              schema:
+                $ref: '#/components/schemas/pem'
+        '400':
+          $ref: '#/components/responses/400'        
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
           $ref: '#/components/responses/defaultError'    
 
 ###############################################################################
@@ -1792,6 +1830,9 @@ components:
           type: string
           description: The passcode to enter when prompted
           example: 1234
+
+    pem:
+      type: string
 
     webhook:
       type: object
