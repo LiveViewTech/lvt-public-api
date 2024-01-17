@@ -875,7 +875,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/webhook'
         '400':
-          $ref: '#/components/responses/400'        
+          $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -913,7 +913,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/webhooks'
         '400':
-          $ref: '#/components/responses/400'        
+          $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -923,7 +923,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
         default:
-          $ref: '#/components/responses/defaultError'        
+          $ref: '#/components/responses/defaultError'
 
   /webhooks/{webhookId}:
     get:
@@ -947,7 +947,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/webhook'
         '400':
-          $ref: '#/components/responses/400'        
+          $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -957,7 +957,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
         default:
-          $ref: '#/components/responses/defaultError'      
+          $ref: '#/components/responses/defaultError'
 
     patch:
       summary: Update a Webhook
@@ -982,7 +982,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/webhook'
         '400':
-          $ref: '#/components/responses/400'        
+          $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -1010,7 +1010,7 @@ paths:
         204:
           description: Deleted
         '400':
-          $ref: '#/components/responses/400'        
+          $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -1046,7 +1046,7 @@ paths:
         204:
           description: OK
         '400':
-          $ref: '#/components/responses/400'        
+          $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -1090,7 +1090,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
         default:
-          $ref: '#/components/responses/defaultError'    
+          $ref: '#/components/responses/defaultError'
 
 ###############################################################################
 
@@ -1112,14 +1112,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/error'
-            
+
     '401':
       description: 'Is returned when the authorization token provided is invalid or expired.'
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/error'    
-    
+            $ref: '#/components/schemas/error'
+
     '403':
       description: 'Is returned when the requested resource is not currently accessible with the provided authorization token.'
       content:
@@ -1226,7 +1226,7 @@ components:
               enabled:
                 type: boolean
                 description: Whether the Webhook is actively receiving messages.
-                example: true    
+                example: true
 
     testWebhook:
       content:
@@ -1849,12 +1849,12 @@ components:
         namespace:
           type: string
           description: The namespace for the event types to receive.
-          example: alerts
+          example: securityAlerts
         enabled:
           type: boolean
           description: Whether the Webhooks is actively receiving messages.
           example: true
-        created:  
+        created:
           type: string
           format: date-time
           description: ISO 8601 formatted string. Represents the `timestamp` at which the webhook was created.
