@@ -14,7 +14,11 @@ tags:
   - name: LiveUnits
     description: Operations on LiveUnits
   - name: Locations
-    description: Operations on locations
+    description: Operations on locations  
+  - name: Webhooks
+    description: Operations on webhooks  
+  - name: PublicKeys
+    description: Operations related to outbound message verification
 
 paths:
   /liveUnits:
@@ -854,13 +858,13 @@ paths:
 
   /webhooks:
     post:
-      operationId: CreateWebhook
-      tags:
-        - Webhooks
-      summary: Register a new webhook to receive alerts
-      description: >
-        **Phase 4**:
-        Register a new webhook to receive alerts
+      summary: Create a Webhook
+      description: |-
+        Create a Webhook.
+        
+        Upon creation, a webhook is first verified by sending a test message. The message must be responded to with a 2xx response code to be considered successful. This success is 
+        prerequisite to the Webhook creation. This process can be tested using the `/webhooks:test` endpoint before committing to creating a Webhook.
+      tags: [ Webhooks ]
       requestBody:
         $ref: '#/components/requestBodies/createWebhook'
       responses:
@@ -872,66 +876,80 @@ paths:
                 $ref: '#/components/schemas/webhook'
         '400':
           $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
-
     get:
-      operationId: GetWebhooks
-      tags:
-        - Webhooks
-      summary: Get a list of registered webhooks
-      description: >
-        **Phase 4**:
-        Get a list of registered webhooks
+      summary: Get Webhooks
+      description: Get a list of Webhooks. By default it returns all owned Webhooks, but can be filtered using the query parameters.
+      tags: [ Webhooks ]
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
+        - name: enabled
+          in: query
+          description: Filter results to return Webhooks where enabled equals the provided state. If omitted it returns all results.
+          schema:
+            type: boolean
+          example: true
+        - name: namespace
+          in: query
+          description: Comma delimited list of namespaces that should be included in the response.
+          schema:
+            type: string
+          example: alerts,other
       responses:
-        '200':
-          description: A list of webhooks.
+        200:
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhooks'
         '400':
           $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
 
   /webhooks/{webhookId}:
-    parameters:
-      - name: webhookId
-        in: path
-        description: The id of the webhook
-        required: true
-        schema:
-          type: string
-
     get:
-      operationId: GetWebhook
-      tags:
-        - Webhooks
-      summary: Get information about a single webhook
-      description: >
-        **Phase 4**:
-        Get information about a single webhook
+      summary: Get a Webhook
+      description: Get a Webhook with the provided ID.
+      tags: [ Webhooks ]
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          description: The UUID of the specific webhook to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
       responses:
-        '200':
-          description: Success
+        200:
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook'
         '400':
           $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -942,24 +960,31 @@ paths:
           $ref: '#/components/responses/defaultError'
 
     patch:
-      operationId: UpdateWebhook
-      tags:
-        - Webhooks
-      summary: Update a webhook
-      description: >
-        **Phase 4**:
-        Update a webhook
+      summary: Update a Webhook
+      description: Update specific properties of a Webhook. If the property is not listed as acceptable in the request body and needs to be changed, you can delete the existing Webhook and recreate it instead.
+      tags: [ Webhooks ]
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          description: The UUID of the specific webhook to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
       requestBody:
         $ref: '#/components/requestBodies/updateWebhook'
       responses:
-        '200':
-          description: Success
+        200:
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/webhook'
         '400':
           $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -970,18 +995,94 @@ paths:
           $ref: '#/components/responses/defaultError'
 
     delete:
-      operationId: DeleteWebhook
-      tags:
-        - Webhooks
-      summary: Delete a webhook
-      description: >
-        **Phase 4**:
-        Delete a webhook
+      summary: Delete a Webhook
+      tags: [ Webhooks ]
+      parameters:
+        - name: webhookId
+          in: path
+          required: true
+          description: The UUID of the specific webhook to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
       responses:
-        '204':
-          description: Success
+        204:
+          description: Deleted
         '400':
           $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /webhooks:test:
+    post:
+      summary: Test a Webhook
+      description: |-
+        Send a test message to a specified URL.
+        
+        This message contains the following payload with a signature in the `X-LVT-HMAC-SHA256` header so developers can test the validation process used in Webhook creation.
+        ```json
+        {
+          "attempt": 1,
+          "currentAttemptTimestamp": "<CURRENT_DATE_AS_ISO_8601_STRING>",
+          "action": "test",
+          "data": {
+            "message": "Hello, world!"
+          }
+        }
+        ```
+      tags: [ Webhooks ]
+      requestBody:
+        $ref: '#/components/requestBodies/updateWebhook'
+      responses:
+        204:
+          description: OK
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'  
+          
+  /publicKeys/{publicKeyId}:
+    get:
+      summary: Get a Public Key
+      description: Get a Public Key with the provided ID.
+      tags: [ PublicKeys ]
+      parameters:
+        - name: publicKeyId
+          in: path
+          required: true
+          description: The UUID of the specific public key to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+      responses:
+        200:
+          description: OK
+          content:
+            application/x-pem-file:
+              schema:
+                $ref: '#/components/schemas/pem'
+        '400':
+          $ref: '#/components/responses/400'        
+        '401':
+          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -1011,8 +1112,16 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/error'
-    '403':
+
+    '401':
       description: 'Is returned when the authorization token provided is invalid or expired.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+    '403':
+      description: 'Is returned when the requested resource is not currently accessible with the provided authorization token.'
       content:
         application/json:
           schema:
@@ -1084,42 +1193,57 @@ components:
         application/json:
           schema:
             type: object
-            required:
-              - url
-              - type
             properties:
               url:
                 type: string
                 format: uri
-                description: The endpoint where the webhook request will be sent.
-                example: https://api.external.com/receiveWebhookEvent
-              type:
+                description: HTTPS URL of the resource to receive Webhook messages.
+                example: https://www.example.com/webhooks
+              namespace:
                 type: string
-                description: >
-                  The type of events to receive.
-                  This field currently only supports an `alerts` value but is included for future expansion.
-                enum:
-                  - alerts
+                description: The namespace for the event types to receive.
+                example: alerts
+              enabled:
+                type: boolean
+                description: Whether the Webhook is actively receiving messages.
+                example: true
 
     updateWebhook:
       content:
         application/json:
           schema:
             type: object
-            description: All fields are optional but at least one field must be provided for the request to be valid.
             properties:
               url:
                 type: string
                 format: uri
-                description: The endpoint where the webhook request will be sent.
-                example: https://api.external.com/receiveWebhookEvent
-              type:
+                description: HTTPS URL of the resource to receive Webhook messages.
+                example: https://www.example.com/webhooks
+              namespace:
                 type: string
-                description: >
-                  The type of events to receive.
-                  This field currently only supports an `alerts` value but is included for future expansion.
-                enum:
-                  - alerts
+                description: The namespace for the event types to receive.
+                example: alerts
+              enabled:
+                type: boolean
+                description: Whether the Webhook is actively receiving messages.
+                example: true
+
+    testWebhook:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+                format: uri
+                description: HTTPS URL of the resource to receive Webhook messages.
+                example: https://www.example.com/webhooks
+              namespace:
+                type: string
+                description: The namespace for the event types to receive.
+                example: alerts
+
 
     startStream:
       content:
@@ -1746,39 +1870,44 @@ components:
           description: The passcode to enter when prompted
           example: 1234
 
+    pem:
+      type: string
+
     webhook:
       type: object
-      description: Information about a registered webhook
-      required:
-        - id
-        - url
-        - type
       properties:
         id:
           type: string
           format: uuid
-          description: ID of the webhook resource
+          description: The UUID of the Webhook.
         url:
           type: string
           format: uri
-          description: The URL to send the webhook event to
-          example: https://api.external.com/receiveWebhook
-        type:
+          description: HTTPS URL of the resource to receive webhook messages.
+          example: https://api.example.com/receiveWebhook
+        namespace:
           type: string
-          description: >
-            The type of events to receive.
-            This field currently only supports an `alerts` value but is included for future expansion.
-          enum:
-            - alerts
-
+          description: The namespace for the event types to receive.
+          example: securityAlerts
+        enabled:
+          type: boolean
+          description: Whether the Webhooks is actively receiving messages.
+          example: true
+        created:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the webhook was created.
+          example: 2023-01-01T12:00:00.000Z
     webhooks:
       allOf:
         - $ref: '#/components/schemas/paginated'
         - type: object
-          required: [ items ]
+          required:
+            - items
           properties:
             items:
               type: array
+              maxItems: 100
               items:
                 $ref: '#/components/schemas/webhook'
 
