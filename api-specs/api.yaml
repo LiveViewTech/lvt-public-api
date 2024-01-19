@@ -1300,6 +1300,11 @@ components:
         - serialNumber
         - manufacturer
         - model
+        - mountPosition
+        - thermal
+        - name
+        - viewType
+        - capabilities
       properties:
         id:
           type: string
@@ -1323,6 +1328,39 @@ components:
           type: string
           description: Model of the camera
           example: Q6135-LE
+        mountPosition:
+          type: string
+          description: Where the camera is mounted on the live unit
+          enum:
+            - unassigned
+            - left
+            - center
+            - right
+          example: center
+        name:
+          type: string
+          description: Name of the camera
+          example: Primary
+        thermal:
+          type: boolean
+          description: If the camera streams thermal video
+        viewType:
+          type: string
+          description: View type of the camera
+          enum:
+            - single
+            - panoramic
+            - quadView
+        capabilities:
+          type: object
+          description: Capabilities which the camera supports
+          required:
+            - position
+          properties:
+            position:
+              type: boolean
+              description: If the camera supports positional ptzf commands
+        
 
     cameras:
       allOf:
@@ -1596,6 +1634,7 @@ components:
     cameraRole:
       type: string
       description: The role of the camera on the live unit (if it has one)
+      deprecated: true
       enum:
         - primary
         - left
