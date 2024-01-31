@@ -856,6 +856,80 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
+  /alertEvents:
+    get:
+      summary: Get AlertEvents
+      description: Get a list of AlertEvents. By default it returns all owned AlertEvents, but can be filtered using the query parameters.
+      tags: [ AlertEvents ]
+      parameters:
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+        - name: enabled
+          in: query
+          description: Filter results to return AlertEvents where enabled equals the provided state. If omitted it returns all results.
+          schema:
+            type: boolean
+          example: true
+        - name: namespace
+          in: query
+          description: Comma delimited list of namespaces that should be included in the response.
+          schema:
+            type: string
+          example: alerts,other
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/alertEvents'
+        '400':
+          $ref: '#/components/responses/400'        
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'        
+
+  /alertEvents/{id}:
+    get:
+      summary: Get a AlertEvent
+      description: Get a AlertEvent with the provided ID.
+      tags: [ AlertEvents ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The UUID of the specific alertEvent to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/alertEvent'
+        '400':
+          $ref: '#/components/responses/400'        
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'         
+
   /webhooks:
     post:
       summary: Create a Webhook
@@ -1291,6 +1365,142 @@ components:
                 $ref: '#/components/schemas/lightState'
 
   schemas:
+
+    alertEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the alert event
+        message:
+          description: The alert message
+        priority: 
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 999
+          description: Priority
+          example: 5
+        createdTime:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the alertEvent was created
+          example: 2023-01-01T12:00:00.000Z
+        updatedTime: 
+          type: string
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the alertEvent was created
+          example: 2023-01-01T12:00:00.000Z
+        alertType: 
+          type: object  
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: The UUID of the alert type
+            name:  
+              type: string 
+              description: The Name of the alert type
+              maxLength: 255  
+        eventContext: 
+          type: object  
+          properties:
+            contextAsOf:
+              type: string
+              format: date-time
+              description: ISO 8601 formatted string. Represents the `timestamp` at which the event was created and the event context was captured.
+              example: 2023-01-01T12:00:00.000Z
+            client:  
+              type: object 
+              properties:
+                id: 
+                  type: string
+                  format: uuid
+                  description: The UUID of the client for which the alert was raised
+                name:   
+                  type: string 
+                  description: The Name of the client at time of event
+                  maxLength: 255        
+            location:  
+              type: object 
+              properties:
+                id: 
+                  type: string
+                  format: uuid
+                  description: The UUID of the event Location 
+                name:
+                  type: string 
+                  description: The Name of the event Location at time of the event
+                  maxLength: 255 
+                timezone: 
+                  type: string
+                  description: The timezone of the location that raised the alert at time of event
+                latitude:
+                  type: number
+                  format: float
+                  minimum: -90.00
+                  maximum: 90.00
+                  description: GPS Decimal Degrees Latitude of the location at time of event
+                  example: 40.123456
+                longitude:
+                  type: number
+                  format: float
+                  minimum: -180.00
+                  maximum: 180.00
+                  description: GPS Decimal Degrees Longitude of the location at time of event
+                  example: -111.789
+            liveUnit:  
+              type: object 
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  description: The UUID of the Live Unit 
+                name:
+                  type: string 
+                  description: The Name of the Live Unit at time of the event
+                  maxLength: 255   
+            camera:  
+              type: object 
+              properties:
+                id: 
+                  type: string
+                  format: uuid
+                  description: The UUID of the camera on the live unit. 
+                role:
+                  type: string
+                  description: The role of the camera on the live unit (if it has one)
+                  maxLength: 255 
+        sourceEvent:      
+          type: object 
+          properties:
+            id: 
+              type: string
+              format: uuid
+              description: The UUID of the source event 
+            eventTime:
+              type: string
+              format: date-time
+              description: ISO 8601 formatted string. Represents the `timestamp` at which the event was triggered
+              example: 2023-01-01T12:00:00.000Z            
+            payload: 
+              type: object 
+              description: The original payload of the source event for which the alert is being generated
+
+    alertEvents:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              maxItems: 100
+              items:
+                $ref: '#/components/schemas/alertEvent'
+
     camera:
       type: object
       required:
