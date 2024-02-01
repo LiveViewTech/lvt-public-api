@@ -1,42 +1,69 @@
-# Webrtc example
+# WebRTC example
 
-## Steps to stream an LVT camera through webrtc
-What needs to take place to initiate the stream and negotiate the webrtc connection through the signal server.
+## Steps to stream an LVT camera through WebRTC
+What needs to take place to initiate the stream and negotiate the WebRTC connection through the camera relay.
 
-1. [start the stream](#start-the-stream)
-2. [request offer from signal server](#request-offer-from-signal-server)
-3. [accept offer from signal server](#accept-offer-from-signal-server)
-4. [handle track event](#handle-track-event)
+- [start the stream](#start-the-stream)
+- [initiate WebSocket and peer connection](#initiate-websocket-and-peer-connection)
+- [request offer from the camera relay](#request-offer-from-the-camera-relay)
+- [accept offer from the camera relay](#accept-offer-from-the-camera-relay)
+- [handle track event](#handle-track-event)
+- [combined example](#combined-example)
+- [firewall](#firewall)
 ### start the stream
 First a `POST /cameras/{cameraId}/streams` command must be sent to initialize the stream.
 
-Then an interval needs to be set to call `POST /streams/{streamId}/checkin` to checkin to keep the stream running.
+| Response fields   |                                                                              |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `streamId`        | Used to checkIn and checkOut of the stream                                   |
+| `refreshInterval` | Millisecond interval the stream checkIn should be called                     |
+| `signalUrl`       | URL to the camera relay signal server which negotiates the WebRTC connection |
+| `streamInfo`      | Case-sensitive data passed to the camera relay                               |
+
+The stream checkIn `POST /streams/{streamId}:checkIn` must be called at an interval to keep the stream alive.
+
+The stream checkOut `DELETE /streams/{streamId}` should be called when you are finished.
 
 ```ts
-const API_TOKEN = '';
-const cameraId = '0a755da9-e10b-4753-8293-cc2c60e11364';
+const API_TOKEN = '<token>';
+const cameraId = '<cameraId>';
 const axiosClient = axios.create({
     headers: {
         'Authorization': `Bearer ${API_TOKEN}` 
     },
 });
 
-axiosClient.post(`https://api.lvt.com/v1/cameras/${cameraId}/streams`, { protocol: 'webrtc' })
-    .then((res) => 
+// start stream
+axiosClient.post(`https://api.lvt.com/v1/cameras/${cameraId}/streams`, { protocol: 'webrtc')
+    .then((res) => {
         const { streamId, signalUrl, streamInfo, refreshInterval } = res.data;
 
+        // keep stream alive
         setInterval(() => {
             axiosClient.post(`https://api.lvt.com/v1/streams/${streamId}:checkIn`);
         }, refreshInterval);
-    )
+
+        // end stream
+        window.addEventListener('beforeunload', () => {
+            axiosClient.delete(`https://api.lvt.com/v1/streams/${streamId}`);
+        });
+    });
 ```
 
-### request offer from signal server
-The `POST /camera/{cameraId}/streams` response will return the needed information to initiate webrtc through a signal server. The `signalUrl` is a uri for a websocket connection. The `streamInfo` is an object that will need to be passed to the signal server.
+### initiate WebSocket and peer connection
+Establish a WebSocket connection with the camera relay, a signal server, which will pass negotiation information between your local client and the stream.
 
 ```ts
 const ws = new WebSocket(signalUrl)
+const peerConnection = new RTCPeerConnection();
+```
 
+### request offer from the camera relay
+The `POST /camera/{cameraId}/streams` response will return the needed information to initiate WebRTC through the camera relay.  The `streamInfo` is an object that will need to be passed to the camera relay.
+
+> **NOTE:** The properties of `streamInfo` (`applicationName`, `streamName`, and `sessionId`) are case sensitive, so you need to ensure the casing is not transformed when you decode or encode the object.
+
+```ts
 const getOffer = () => {
     const message = {
         direction: 'play',
@@ -52,8 +79,10 @@ ws.addEventListener('open', () => {
 });
 ```
 
+---
+
 Sometimes, it can take a couple seconds to establish a stream with the camera,
-so the signal server will reply it's not ready, the request will need to be resent.
+so the camera relay will reply it's not ready, and the request will need to be resent.
 
 ```ts
 ws.addEventListener('message', (messageEvent) => {
@@ -63,25 +92,24 @@ ws.addEventListener('message', (messageEvent) => {
     if (status == 502 || status == 504) {
         setTimeout(getOffer, 1000);
     }
-})
+});
 ```
 
-### accept offer from signal server
-Once the signal server is ready it will send an offer back through the websocket with a status of 200.
+| code |                                                                                                                                                |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 502  | the camera relay is in the process of connecting to the camera                                                                                 |
+| 504  | the camera relay is not attempting to connect to the camera. This is an expected response for a couple seconds after the start stream request. |
+| 200  | success                                                                                                                                        |
+|      |                                                                                                                                                |
 
-Handling the offer includes:
-
-1.  adding a `sessionId` to the `streamInfo`
-2.  adding the `sdp` (Session Description Protocol) to the `RTCPeerConnection`
-3.  sending a reply to the signal server
-4.  adding any `iceCandidates` to the `RTCPeerConnection`
+### accept offer from the camera relay
+Once the camera relay is ready it will send an offer back through the WebSocket with a status of 200. Steps to handle the offer include:
 
 #### 1. add sessionId
-The signal server sends a session id `data.streamInfo.sessionId`, which
+The camera relay sends a session id `data.streamInfo.sessionId`, which
 needs to be added to the `streamInfo` from the `POST /camera/{cameraId}/streams` response.
 
 ```ts
-const peerConnection = new RTCPeerConnection();
 
 ws.addEventListener('message', (message) => {
     const data = JSON.parse(message.data);
@@ -96,26 +124,15 @@ ws.addEventListener('message', (message) => {
 });
 ```
 
-#### 2. add sdp as remote description
-The signal server sends the sdp of the remote server `data.sdp`, which needs to be added to the `RTCPeerConnection`
+#### 2. set remote SDP send local SDP to camera relay 
+The camera relay sets the SDP from the remote server `data.sdp` on the `RTCPeerConnection`.
+A local SDP is created and sent to the camera relay. 
 
 ```ts
-// step 2 
+// step 2
 if (data.sdp) {
     peerConnection
-        .setRemoteDescription(new RTCSessionDescription(data.sdp)); // step 2
-}
-```
-
-#### 3. send local sdp to signal server
-A local sdp needs to be created and sent to the signal server.
-
-```ts
-// step 2 and 3
-if (data.sdp) {
-    peerConnection
-        .setRemoteDescription(new RTCSessionDescription(data.sdp)) // step 2
-        // step 3
+        .setRemoteDescription(new RTCSessionDescription(data.sdp)) 
         .then(() => peerConnection.createAnswer())
         .then((description) => peerConnection.setLocalDescription(description))
         .then(() => {
@@ -131,58 +148,22 @@ if (data.sdp) {
 }
 ```
 
-#### 4. add proposed ice candiates
-The signal server sends proposed ice candidates which need to be added to the `RTCPeerConnection`.
+#### 3. add proposed ice candidates
+The camera relay sends proposed ice candidates which need to be added to the `RTCPeerConnection`.
+The server will send both TCP and UDP ice candidates. You will have better performance if you ensure the UDP protocol is used; TCP re-transmissions can cause significant delays.
 
 ```ts
-// step 4
+// step 3 add ice candidates
 if (data.iceCandidates) {
     for (const ic of data.iceCandidates) {
-        peerConnection.addIceCandidate(new RTCIceCandidate(ic));
+        if (ic.candidate.indexOf(' UDP ') > 0) {
+            peerConnection.addIceCandidate(new RTCIceCandidate(ic));
+        }
     }
 }
 ```
 
-#### All together
-```ts
-ws.addEventListener('message', (message) => {
-    const data = JSON.parse(message.data);
-    const status = Number(data.status);
 
-    if (status == 200) {
-        // step 1
-        if (data.streamInfo && data.streamInfo.sessionId) {
-            streamInfo.sessionId = data.streamInfo.sessionId;
-        }
-
-        //step 2 and 3
-        if (data.sdp) {
-            peerConnection
-                .setRemoteDescription(new RTCSessionDescription(data.sdp)) // step 2
-                // step 3
-                .then(() => peerConnection.createAnswer())
-                .then((description) => peerConnection.setLocalDescription(description))
-                .then(() => {
-                    const message = {
-                        direction: 'play',
-                        command: 'sendResponse',
-                        sdp: peerConnection.localDescription,
-                        streamInfo,
-                    };
-
-                    ws.send(JSON.stringify(message));
-                });
-        }
-
-        // step 4
-        if (data.iceCandidates) {
-            for (const ic of data.iceCandidates) {
-                peerConnection.addIceCandidate(new RTCIceCandidate(ic));
-            }
-        }
-    }
-});
-```
 ### handle track event
 When a new track is ready, the track event will be sent.
 
@@ -195,11 +176,112 @@ peerConnection.addEventListener('track', (event) => {
 });
 ```
 
-Note that autoplaying a video may be blocked unless you have muted the video.
+> **NOTE:** Autoplaying a video may be blocked unless you have muted the video.
 https://developer.mozilla.org/en-US/docs/Web/Media/Autoplay_guide#autoplay_availability
 
-### more information
-More details on establishing webrtc connections:
+### combined example
+```ts
+const establishConnectionToStream = (signalUrl, streamInfo) => {
+    const ws = new WebSocket(signalUrl)
+    const peerConnection = new RTCPeerConnection();
+
+    const getOffer = () => {
+        const message = {
+            direction: 'play',
+            command: 'getOffer',
+            streamInfo,
+        };
+
+        ws.send(JSON.stringify(message));
+    }
+
+    ws.addEventListener('open', () => {
+        // request offer
+        getOffer();
+    });
+
+    ws.addEventListener('message', (message) => {
+        const data = JSON.parse(message.data);
+        const status = Number(data.status);
+
+        // retry, stream is not ready.
+        if (status == 502 || status == 504) {
+            setTimeout(getOffer, 1000);
+        }
+
+        if (status == 200) {
+            // step 1: add session id
+            if (data.streamInfo && data.streamInfo.sessionId) {
+                streamInfo.sessionId = data.streamInfo.sessionId;
+            }
+
+            //step 2: set remote SDP and send local SDP to the camera relay
+            if (data.sdp) {
+                peerConnection
+                    .setRemoteDescription(new RTCSessionDescription(data.sdp)) // step 2
+                    .then(() => peerConnection.createAnswer())
+                    .then((description) => peerConnection.setLocalDescription(description))
+                    .then(() => {
+                        const message = {
+                            direction: 'play',
+                            command: 'sendResponse',
+                            sdp: peerConnection.localDescription,
+                            streamInfo,
+                        };
+
+                        ws.send(JSON.stringify(message));
+                    });
+            }
+
+            // step 3 add ice candidates
+            if (data.iceCandidates) {
+                for (const ic of data.iceCandidates) {
+                    if (ic.candidate.indexOf(' UDP ') > 0) {
+                        peerConnection.addIceCandidate(new RTCIceCandidate(ic));
+                    }
+                }
+            }
+        }
+    });
+
+    peerConnection.addEventListener('track', (event) => {
+        const [ stream ] = event.streams;
+
+        const videoEm = document.getElementById('webrtc-video');
+        videoEm.srcObject = stream;
+    });
+}
+
+const API_TOKEN = '<token>';
+const cameraId = '<cameraId>';
+const axiosClient = axios.create({
+    headers: {
+        'Authorization': `Bearer ${API_TOKEN}` 
+    },
+});
+
+// start stream
+axiosClient.post(`https://api.lvt.com/v1/cameras/${cameraId}/streams`, { protocol: 'webrtc' })
+    .then((res) => {
+        const { streamId, signalUrl, streamInfo, refreshInterval } = res.data;
+
+        // keep stream alive
+        setInterval(() => {
+            axiosClient.post(`https://api.lvt.com/v1/streams/${streamId}:checkIn`);
+        }, refreshInterval);
+
+        // end stream
+        window.addEventListener('beforeunload', () => {
+            axiosClient.delete(`https://api.lvt.com/v1/streams/${streamId}`);
+        });
+    });
+```
+
+### firewall
+Your network firewall will need to allow communication as indicated: https://support.liveviewtech.com/article/44-configuring-firewall-whitelisting
+
+## Additional information
+More details on establishing WebRTC connections:
 https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling
 
 
