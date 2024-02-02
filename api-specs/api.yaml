@@ -1385,6 +1385,14 @@ components:
           format: date-time
           description: ISO 8601 formatted string. Represents the `timestamp` at which the alertEvent was triggered
           example: 2023-01-01T12:00:00.000Z
+        currentPriority:
+          type: string
+          description: Current evaluated priority as of the time the entity was queried. Note that this can vary over time.
+          enum:
+            - high
+            - medium
+            - low
+          example: medium
         alertType: 
           type: object  
           properties:
