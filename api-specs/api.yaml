@@ -1378,7 +1378,12 @@ components:
         updatedTime: 
           type: string
           format: date-time
-          description: ISO 8601 formatted string. Represents the `timestamp` at which the alertEvent was created
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the alertEvent was updated
+          example: 2023-01-01T12:00:00.000Z
+        eventTime: 
+          type: string
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the alertEvent was triggered
           example: 2023-01-01T12:00:00.000Z
         alertType: 
           type: object  
