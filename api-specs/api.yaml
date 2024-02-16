@@ -1295,7 +1295,6 @@ components:
       type: object
       required:
         - id
-        - role
         - liveUnitId
         - serialNumber
         - manufacturer
@@ -1310,8 +1309,6 @@ components:
           type: string
           format: uuid
           description: Id of the camera
-        role:
-          $ref: '#/components/schemas/cameraRole'
         liveUnitId:
           type: string
           format: uuid
@@ -1329,14 +1326,7 @@ components:
           description: Model of the camera
           example: Q6135-LE
         mountPosition:
-          type: string
-          description: Where the camera is mounted on the live unit
-          enum:
-            - unassigned
-            - left
-            - center
-            - right
-          example: center
+          $ref: '#/components/schemas/cameraMountPosition'
         name:
           type: string
           description: Name of the camera
@@ -1631,21 +1621,22 @@ components:
           description: Total number of items in the collection being iterated
           example: 1234
 
-    cameraRole:
+
+    cameraMountPosition:
       type: string
-      description: The role of the camera on the live unit (if it has one)
-      deprecated: true
+      description: The position of the camera on the live unit
       enum:
-        - primary
+        - center
         - left
         - right
-        - none
+        - unassigned
+      example: center
 
     alertMedia:
       type: object
       required:
         - cameraId
-        - cameraRole
+        - cameraMountPosition
         - mimeType
         - timestamp
         - url
@@ -1654,9 +1645,8 @@ components:
           type: string
           format: uuid
           description: The ID of the camera the media was taken from
-        cameraRole:
-          type: string
-          description: The role of the camera (if it has one)
+        cameraMountPosition:
+          $ref: '#/components/schemas/cameraMountPosition'
         mimeType:
           type: string
           format: mime
@@ -1709,7 +1699,7 @@ components:
         - id
         - timestamp
         - cameraId
-        - cameraRole
+        - cameraMountPosition
         - cause
         - clientId
         - liveUnitId
@@ -1729,8 +1719,8 @@ components:
           type: string
           format: uuid
           description: The id of the camera that triggered the alert
-        cameraRole:
-          $ref: '#/components/schemas/cameraRole'
+        cameraMountPosition:
+          $ref: '#/components/schemas/cameraMountPosition'
         cause:
           type: string
           example: loitering
