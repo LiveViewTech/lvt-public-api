@@ -44,13 +44,14 @@ The `/webhooks:test` endpoint just takes the request and immediately turns aroun
   "attempt": 1,
   "currentAttemptTimestamp": "<<current datetime as an ISO-8601 string>>",
   "action": "test",
+  "namespace": "securityAlerts",
   "data": {
     "message": "Hello, world!"
   }
 }
 ```
 
-The message is accompanied with two custom headers that should be validated when handling the request.
+The message is accompanied by two custom headers that should be validated when handling the request.
 
 * `X-LVT-HMAC-SHA256`: An HMAC signature to verify the message authenticity
 * `X-LVT-PUBKEY-URL`: A URL to fetch the public key of the key-pair used to sign the message
@@ -125,21 +126,23 @@ All webhook messages will be wrapped with the following data:
 
 | field                     | type             | description                                                                                            |
 |---------------------------|------------------|--------------------------------------------------------------------------------------------------------|
-| `attempt`                 | integer (1 - 10) | The number of times the webhook message has been sent.                                                 |
-| `initialAttemptTimestamp` | ISO-8601 string  | The timestamp of the initial attempt. Only included if the current attempt is not the initial attempt. |
-| `currentAttemptTimestamp` | ISO-8601 string  | The timestamp of the current attempt.                                                                  |
 | `action`                  | string           | The action that prompted the webhook message.                                                          |
+| `attempt`                 | integer (1 - 10) | The number of times the webhook message has been sent.                                                 |
+| `currentAttemptTimestamp` | ISO-8601 string  | The timestamp of the current attempt.                                                                  |
 | `data`                    | object           | The data associated with the webhook message. This schema can be determined by the `action` field.     |
+| `initialAttemptTimestamp` | ISO-8601 string  | The timestamp of the initial attempt. Only included if the current attempt is not the initial attempt. |
+| `namespace`               | string           | The namespace of the registered webhook that triggered the event.                                      |
 
 Example:
 
 ```json
 {
+  "action": "raised",
   "attempt": 3,
+  "currentAttemptTimestamp": "2024-01-16T19:34:16.335Z",
+  "data": {},
   "initialAttemptTimestamp": "2024-01-16T18:33:15.335Z",
-  "currentAttemptTimestamp": "2024-01-16T18:33:15.335Z",
-  "action": "securityAlertRaised",
-  "data": {}
+  "namespace": "securityAlerts"
 }
 ```
 
@@ -148,42 +151,40 @@ message.
 
 The data in these messages is intended to reflect the schema of the `/alerts` endpoint of the API.
 
-* `securityAlertRaised` uses the same schema as a `GET /alerts/{alertId}` request.
-* `securityAlertMediaAvailable` uses the same schema as a `media` item from the `securityAlert` schema.
-* `securityAlertResolved` uses the same schema as a `resolution` field from the `securityAlert` schema.
+* `raised` uses the `securityAlert` schema from the response of a `GET /alerts/{alertId}` request.
+* `mediaAvailable` uses the same schema as a `media` item from the `securityAlert` schema.
+* `resolved` uses the same schema as a `resolution` field from the `securityAlert` schema.
 
-### `securityAlertRaised`
+### `raised`
 
-When the `action` is `securityAlertRaised` you can expect the following schema:
+When the `action` is `raised` you can expect the following schema:
 
 | field                   | type                        | description                                                                                                                                                                                    |
 |-------------------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `id`                    | integer (1 - 10)            | The unique identifier for the security alert.                                                                                                                                                  |
-| `timestamp`             | string (IS0-8601 timestamp) | The timestamp of when the security alert was raised.                                                                                                                                           |
 | `cameraId`              | string (UUID)               | The ID of the camera that triggered the security alert.                                                                                                                                        |
 | `cameraRole`            | string                      | The role of the camera on the live unit (if it has one).                                                                                                                                       |
 | `cause`                 | string                      | A category for the type of action that triggered the security alert.                                                                                                                           |
 | `clientId`              | string (UUID)               | The ID of the client that owns the live unit.                                                                                                                                                  |
 | `clientName`            | string                      | The name of the client that owns the live unit.                                                                                                                                                |
-| `coordinates`           | object                      | GPS coordinates of the unit raising the security alert.                                                                                                                                        |
 | `coordinates.latitude`  | float                       | The coordinate latitude value.                                                                                                                                                                 |
 | `coordinates.longitude` | float                       | The coordinate longitude value.                                                                                                                                                                |
+| `coordinates`           | object                      | GPS coordinates of the unit raising the security alert.                                                                                                                                        |
+| `id`                    | integer (1 - 10)            | The unique identifier for the security alert.                                                                                                                                                  |
 | `liveUnitId`            | string (UUID)               | The ID of the live unit raising the security alert.                                                                                                                                            |
 | `liveUnitName`          | string                      | The user assigned name of the live unit raising the security alert.                                                                                                                            |
 | `locationId`            | string (UUID)               | The ID of the location the live unit is assigned to.                                                                                                                                           |
 | `locationName`          | string                      | The user assigned name of the location the live unit is assigned to.                                                                                                                           |
 | `locationTimezone`      | string (ISO-8601 timestamp) | The local timezone of the live unit.                                                                                                                                                           |
 | `media`                 | array                       | An array of media files associated with the security alert. (This will always be empty in the initial webhook message).                                                                        |
+| `resolution`            | object                      | The details about the security alert resolution. (This will always be `null` for the initial webhook message).                                                                                 |
 | `state`                 | string                      | The state of the security alert. (This will always be `unresolved` in the initial webhook message).                                                                                            |
 | `subject`               | string                      | The subject of the security alert (if applicable). For example, if the `cause` is `intrusion` this field may indicate that the subject of the intrusion was a `human`, `animal`, or `vehicle`. |
-| `resolution`            | object                      | The details about the security alert resolution. (This will always be `null` for the initial webhook message).                                                                                 |
+| `timestamp`             | string (IS0-8601 timestamp) | The timestamp of when the security alert was raised.                                                                                                                                           |
 
 Example `data` contents:
 
 ```json
 {
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "timestamp": "2023-12-08T17:04:43.164Z",
   "cameraId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "cameraRole": "primary",
   "cause": "loitering",
@@ -193,28 +194,30 @@ Example `data` contents:
     "latitude": 40.123456,
     "longitude": -111.789
   },
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "liveUnitId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "liveUnitName": "string",
   "locationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "locationName": "string",
   "locationTimezone": "string",
   "media": [],
+  "resolution": null,
   "state": "unresolved",
   "subject": "human",
-  "resolution": null
+  "timestamp": "2023-12-08T17:04:43.164Z"
 }
 ```
 
-### `securityAlertMediaAvailable`
+### `mediaAvailable`
 
-When the `action` is `securityAlertMediaAvailable` you can expect the following schema:
+When the `action` is `mediaAvailable` you can expect the following schema:
 
 | field             | type                        | description                                                                                                                                                                                                                            |
 |-------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `securityAlertId` | string (UUID)               | The ID of the security alert the media is associated with.                                                                                                                                                                             |
 | `cameraId`        | string (UUID)               | The ID of the camera that captured the media.                                                                                                                                                                                          |
 | `cameraRole`      | string                      | The role of the camera that captured the media.                                                                                                                                                                                        |
 | `mimeType`        | string                      | The mime type of the media.                                                                                                                                                                                                            |
+| `securityAlertId` | string (UUID)               | The ID of the security alert the media is associated with.                                                                                                                                                                             |
 | `timestamp`       | string (ISO-8601 timestamp) | The timestamp of when the media was captured.                                                                                                                                                                                          |
 | `url`             | string                      | A signed URL to retrieve the media. This URL will only be valid for 2 hours. To fetch the media again after the link has expired, a `GET /alerts/{securityAlertId}` request needs to be made which will refresh the URLs of the media. |
 
@@ -222,39 +225,39 @@ Example `data` contents:
 
 ```json
 {
-  "securityAlertId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "cameraId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "cameraRole": "string",
   "mimeType": "image/jpeg",
+  "securityAlertId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "timestamp": "2023-12-08T17:04:43.164Z",
   "url": "https://cdn.lvt.com/alerts/security/202/20230928150412/1121.jpg?Expires=1695924513&Key-Pair-Id=MZ1Z1ZZNSPSL2&Signature=3fWTV-M0bAdXiFhjbLSU~iMKDAcbHKxxZfEOZJT3t2031cfrqNWfizjxyilmSNiuxxq39vHPdQQO3cF9WKKpVcPczVFcTUbEAUyDVA12akUexegBomwPkf4PcJgnEQr~-vp6wtzUawYHPYpNaH32xSaWKGxqOleq-c8F~5~4kI6MjuFFZylKLAdzQ1Oan4ujlnBfpbQPWKU-pBT8FotaefzjAZLGtzUtR37oNRK0j687p6vZyQIqsg~r-MDY5ZJZBZk3G02Dl0LkpcpzHf-xI~IHGhlQ4B~9JLDeFLCLrvFC47sOww7We8J4QkI8RyuoetV3ChegywIHVM0U1qFT0Q__"
 }
 ```
 
-### `securityAlertResolved`
+### `resolved`
 
-When the `action` is `securityAlertResolved` you can expect the following schema:
+When the `action` is `resolved` you can expect the following schema:
 
 | field                       | type            | description                                                                        |
 |-----------------------------|-----------------|------------------------------------------------------------------------------------|
+| `note`                      | object          | Additional notes left by the user describing the resolution.                       |
+| `resolveInitiatedTimestamp` | string          | The timestamp of when the security alert was resolved by the user.                 |
+| `resolvedTimestamp`         | object          | The timestamp of when the security alert resolution was received by the live unit. |
 | `securityAlertId`           | string (UUID)   | The ID of the security alert the media is associated with.                         |
 | `tags`                      | array (string)  | A list of tags that the resolution was categorized with.                           |
 | `userId`                    | ISO-8601 string | The ID of the user who resolved the security alert.                                |
-| `resolveInitiatedTimestamp` | string          | The timestamp of when the security alert was resolved by the user.                 |
-| `note`                      | object          | Additional notes left by the user describing the resolution.                       |
-| `resolvedTimestamp`         | object          | The timestamp of when the security alert resolution was received by the live unit. |
 
 Example `data` contents:
 
 ```json
 {
+  "note": "They stole the declaration of independence.",
+  "resolveInitiatedTimestamp": "2023-12-08T17:04:43.164Z",
+  "resolvedTimestamp": "2023-12-08T17:04:43.164Z",
   "securityAlertId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "tags": [
     "theft"
   ],
-  "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "resolveInitiatedTimestamp": "2023-12-08T17:04:43.164Z",
-  "note": "They stole the declaration of independence.",
-  "resolvedTimestamp": "2023-12-08T17:04:43.164Z"
+  "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
 }
 ```
