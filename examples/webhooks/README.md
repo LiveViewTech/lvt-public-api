@@ -89,7 +89,7 @@ async function requestHandler(request, response) {
   verify.update(JSON.stringify(request.body));
   verify.end();
 
-  if (verify.verify(publicKey, signature)) {
+  if (verify.verify(publicKey, signature, 'base64')) {
     console.log('Valid message received');
     res.sendStatus(204);
   } else {
