@@ -14,11 +14,13 @@ tags:
   - name: LiveUnits
     description: Operations on LiveUnits
   - name: Locations
-    description: Operations on locations  
+    description: Operations on locations
   - name: Webhooks
-    description: Operations on webhooks  
+    description: Operations on webhooks
   - name: PublicKeys
     description: Operations related to outbound message verification
+  - name: Talkdown
+    description: Operations related to Partner Talkdown
 
 paths:
   /liveUnits:
@@ -179,6 +181,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/sounds'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /liveUnits/{liveUnitId}:call:
+    post:
+      operationId: TalkDownStart
+      tags:
+        - LiveUnits
+        - Talkdown
+      summary: Initiate a speaker talk-down call
+      description: >
+        Initiate a speaker talk-down call with the live unit.
+      parameters:
+        - name: liveUnitId
+          in: path
+          description: Filter results by liveUnitId.
+          required: true
+          schema:
+            type: string
+        - name: securityAlertId
+          in: query
+          description: ID of an alert that prompted the talkdown action
+      responses:
+        '200':
+          description: An object containing a WebSocket URL for initiating a talkdown session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/talkDownData'
         '400':
           $ref: '#/components/responses/400'
         '403':
@@ -1056,8 +1093,8 @@ paths:
         '500':
           $ref: '#/components/responses/500'
         default:
-          $ref: '#/components/responses/defaultError'  
-          
+          $ref: '#/components/responses/defaultError'
+
   /publicKeys/{publicKeyId}:
     get:
       summary: Get a Public Key
@@ -1080,7 +1117,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/pem'
         '400':
-          $ref: '#/components/responses/400'        
+          $ref: '#/components/responses/400'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -1350,7 +1387,6 @@ components:
             position:
               type: boolean
               description: If the camera supports positional ptzf commands
-        
 
     cameras:
       allOf:
@@ -1970,3 +2006,22 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/light'
+
+    talkDownData:
+      type: object
+      description: Data required to initiate a talkdown session
+      required:
+        - wssUrl
+        - callId
+      properties:
+        wssUrl:
+          type: string
+          format: uri
+          description: >
+            The WebSocket url. Send audio as byte arrays of mono,
+            Mulaw-encoded audio packets with a sample rate of 8KHz.
+            Close the socket to end the talkdown session.
+          example: wss://talkdown.api.lvt.com?callId=456
+        callId:
+          type: string
+          description: A unique identifier for the talkdown session
