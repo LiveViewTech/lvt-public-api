@@ -19,6 +19,8 @@ tags:
     description: Operations on webhooks
   - name: PublicKeys
     description: Operations related to outbound message verification
+  - name: Talkdown
+    description: Operations related to Partner Talkdown
 
 paths:
   /liveUnits:
@@ -193,6 +195,7 @@ paths:
       operationId: TalkDownStart
       tags:
         - LiveUnits
+        - Talkdown
       summary: Initiate a speaker talk-down call
       description: >
         Initiate a speaker talk-down call with the live unit.
@@ -208,7 +211,7 @@ paths:
           description: ID of an alert that prompted the talkdown action
       responses:
         '200':
-          description: Ann object with data to initiate a talkdown session.
+          description: An object containing a WebSocket URL for initiating a talkdown session.
           content:
             application/json:
               schema:
@@ -2008,14 +2011,18 @@ components:
       type: object
       description: Data required to initiate a talkdown session
       required:
-        - url
+        - wssUrl
         - callId
       properties:
-        url:
+        wssUrl:
           type: string
           format: uri
-          description: The url to initiate the WebSocket
+          description: >
+            The WebSocket url. Send audio as byte arrays of mono,
+            Mulaw-encoded audio packets with a sample rate of 8KHz.
+            Close the socket when to end the talkdown session.
           example: wss://talkdown.api.lvt.com?callId=456
         callId:
           type: string
           description: A unique identifier for the talkdown session
+
