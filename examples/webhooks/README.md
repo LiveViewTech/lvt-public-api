@@ -28,8 +28,7 @@ Example request for a validation test:
 }
 ```
 
-> [!NOTE]
-> This is the simplest version of the request. It is intended to help develop the validation. Additional testing will be described below.
+_Note_: This is the simplest version of the request. It is intended to help develop the validation. Additional testing will be described below.
 
 ### Validation
 
@@ -200,26 +199,25 @@ arrays or can replace event or alert fields.
 
 The schema of the `data` field can be determined based on the `action`. Details are described below.
 
-> [!NOTE]
-> Custom types are described in the _Types_ section under the message descriptions.
+_Note_: Custom types are described in the _Types_ section under the message descriptions.
 
 ### `eventRaised`
 
 This should be the first message received in the context of an event. The `data` field matches the response of a `GET /alerts/{alertId}` request:
 
-| Field        | Type            | Description                                                                           |
-|--------------|-----------------|---------------------------------------------------------------------------------------|
-| `alerts`     | array (`alert`) | A list of alerts raised during the event.                                             |
-| `client`     | `client`        | Details about the client which owned the unit when the event was raised.              |
-| `id`         | string (UUID)   | The unique identifier for the event.                                                  |
-| `liveUnit`   | `liveUnit`      | Details about the live unit that raised the event.                                    |
-| `location`   | `location`      | Details about the location the live unit was at when the event was raised.            |
-| `notes`      | array (`note`)  | A list of notes describing the event.                                                 |
-| `priority`   | string          | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`. | 
-| `resolution` | `resolution`    | Details about the resolution of the event.                                            |
+| Field          | Type            | Description                                                                           |
+|----------------|-----------------|---------------------------------------------------------------------------------------|
+| `alerts`       | array (`alert`) | A list of alerts raised during the event.                                             |
+| `client`       | `client`        | Details about the client which owned the unit when the event was raised.              |
+| `id`           | string (UUID)   | The unique identifier for the event.                                                  |
+| `liveUnit`     | `liveUnit`      | Details about the live unit that raised the event.                                    |
+| `location`     | `location`      | Details about the location the live unit was at when the event was raised.            |
+| `notes`        | array (`note`)  | A list of notes describing the event.                                                 |
+| `priority`     | string          | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`. | 
+| `resolution`   | `resolution`    | Details about the resolution of the event.                                            |
+| `assignedUser` | `user`          | Details about the user assigned to investigate the event.                             |
 
-<details>
-<summary>Example `data` contents</summary>
+Example `data` contents:
 
 ```json
 {
@@ -242,11 +240,12 @@ This should be the first message received in the context of an event. The `data`
   },
   "notes": [],
   "resolution": null,
-  "priority": "medium"
+  "priority": "medium",
+  "assignedUser": null
 }
 ```
 
-</details>
+_Note_: `alerts` and `notes` are always expected to be empty arrays in an `eventRaised` message. `resolution` and `assignedUser` are also always expected to be `null`.
 
 ### `alertRaised`
 
@@ -259,8 +258,7 @@ After an event is raised, at least one alert will be raised.
 
 The `alert` field can be appended to the `events[eventId].alerts` array.
 
-<details>
-<summary>Example `data` contents</summary>
+Example `data` contents:
 
 ```json
 {
@@ -278,12 +276,12 @@ The `alert` field can be appended to the `events[eventId].alerts` array.
       "mountPosition": "center",
       "thermal": false,
       "viewType": "panoramic"
-    },
-    "assignedUser": null
+    }
   }
 }
 ```
-</details>
+
+_Note_: `media` is always expected to be empty in an `alertRaised` message. `assignedUser` is also always expected to be `null`
 
 ### `mediaAvailable`
 
@@ -297,8 +295,7 @@ A live unit raises an alert as it is uploading alert recordings and images. Once
 
 The `media` field can be appended to the `events[eventId].alerts[alertId].media` array.
 
-<details>
-<summary>Example `data` contents</summary>
+Example `data` contents:
 
 ```json
 {
@@ -317,7 +314,6 @@ The `media` field can be appended to the `events[eventId].alerts[alertId].media`
   }
 }
 ```
-</details>
 
 ### `noteAdded`
 
@@ -330,8 +326,7 @@ During the investigation of an event, a user may add notes about the event. Note
 
 The `note` field can be appended to the `events[eventId].notes` array.
 
-<details>
-<summary>Example `data` contents</summary>
+Example `data` contents:
 
 ```json
 {
@@ -348,7 +343,6 @@ The `note` field can be appended to the `events[eventId].notes` array.
   }
 }
 ```
-</details>
 
 ### `resolved`
 
@@ -361,8 +355,7 @@ When a resolution is posted, due to the asynchronous nature of the events, other
 
 The `resolution` field can replace the `events[eventId].resolution` property.
 
-<details>
-<summary>Example</summary>
+Example `data` contents:
 
 ```json
 {
@@ -377,7 +370,6 @@ The `resolution` field can replace the `events[eventId].resolution` property.
   }
 }
 ```
-</details>
 
 ### `typeChanged`
 
@@ -391,8 +383,7 @@ If an alert is detected incorrectly, it may be changed after it has been raised.
 
 The `alertType` field can replace the `events[eventId].alerts[alertId].alertType` property.
 
-<details>
-<summary>Example `data` contents</summary>
+Example `data` contents:
 
 ```json
 {
@@ -403,7 +394,6 @@ The `alertType` field can replace the `events[eventId].alerts[alertId].alertType
   }
 }
 ```
-</details>
 
 ### `userAssigned`
 
@@ -416,8 +406,7 @@ A user may be assigned to investigate the event. When the user is assigned or a 
 
 The `assignedUser` field can replace the `events[eventId].assignedUser` property.
 
-<details>
-<summary>Example `data` contents</summary>
+Example `data` contents:
 
 ```json
 {
@@ -428,7 +417,6 @@ The `assignedUser` field can replace the `events[eventId].assignedUser` property
   }
 }
 ```
-</details>
 
 ## Types
 
