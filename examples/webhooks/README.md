@@ -281,7 +281,7 @@ Example `data` contents:
 }
 ```
 
-_Note_: `media` is always expected to be empty in an `alertRaised` message. `assignedUser` is also always expected to be `null`
+_Note_: `media` is always expected to be empty in an `alertRaised` message.
 
 ### `mediaAvailable`
 
