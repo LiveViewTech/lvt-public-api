@@ -44,7 +44,7 @@ The `/webhooks:test` endpoint just takes the request and immediately turns aroun
 ```json
 {
   "attempt": 1,
-  "currentAttemptTimestamp": "<<current datetime as an ISO-8601 string>>",
+  "currentAttemptTimestamp": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
   "action": "test",
   "namespace": "securityAlerts",
   "data": {
@@ -225,18 +225,18 @@ Example `data` contents:
   "alerts": [],
   "client": {
     "id": "d4f2313e-e56b-11ee-bd3d-0242ac120002",
-    "name": "string"
+    "name": "LiveView Technologies"
   },
   "location": {
     "id": "dcbcb24a-e56b-11ee-bd3d-0242ac120002",
-    "name": "string",
-    "timezone": "string",
+    "name": "HQ",
+    "timezone": "America/Denver",
     "latitude": 40.123456,
     "longitude": -111.789
   },
   "liveUnit": {
     "id": "e0dd0618-e56b-11ee-bd3d-0242ac120002",
-    "name": "string"
+    "name": "Houston"
   },
   "notes": [],
   "resolution": null,
@@ -303,7 +303,7 @@ Example `data` contents:
   "alertId": "665a608a-e56a-11ee-bd3d-0242ac120002",
   "media": {
     "id": "bb4af400-e56b-11ee-bd3d-0242ac120002",
-    "mimeType": "string",
+    "mimeType": "video/mp4",
     "timestamp": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
     "camera": {
       "id": "f4670742-e56b-11ee-bd3d-0242ac120002",
@@ -314,6 +314,9 @@ Example `data` contents:
   }
 }
 ```
+
+_Note_: The media ID in the example can be used to view an actual test video using the `GET /media/{mediaId}` endpoint. `9c20e508-e575-11ee-bd3d-0242ac120002` can be used to view 
+an actual test image using the same endpoint.
 
 ### `noteAdded`
 
