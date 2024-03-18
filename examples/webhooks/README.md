@@ -391,6 +391,7 @@ Example `data` contents:
 ```json
 {
   "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "alertId": "665a608a-e56a-11ee-bd3d-0242ac120002",
   "alertType": {
     "id": "ee8ffd88-e56b-11ee-bd3d-0242ac120002",
     "name": "Test Alert"
