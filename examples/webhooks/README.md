@@ -183,15 +183,15 @@ Example:
 As previously mentioned, the current version of webhooks only supports a single `securityAlerts` namespace. Within that namespace there are several actions that can trigger a
 webhook message.
 
-| Action           | Description                                        |
-|------------------|----------------------------------------------------|
-| `eventRaised`    | A new event has been reported by a live unit.      |
-| `alertRaised`    | A new alert has been reported by a live unit.      |
-| `mediaAvailable` | Media associated with an alert has been uploaded.  |
-| `noteAdded`      | A user has added a note to the event.              |
-| `resolved`       | A user has resolved the event.                     |
-| `typeChanged`    | The type of an alert has changed.                  |
-| `userAssigned`   | A user has been assigned to investigate the event. |
+| Action             | Description                                        |
+|--------------------|----------------------------------------------------|
+| `alertRaised`      | A new alert has been reported by a live unit.      |
+| `alertTypeChanged` | The type of an alert has changed.                  |
+| `eventRaised`      | A new event has been reported by a live unit.      |
+| `mediaAvailable`   | Media associated with an alert has been uploaded.  |
+| `noteAdded`        | A user has added a note to the event.              |
+| `resolved`         | A user has resolved the event.                     |
+| `userAssigned`     | A user has been assigned to investigate the event. |
 
 The data in these messages reflects the schema of the `/events` endpoint of the API. The intent is to allow clients to aggregate a full event (as if queried through the
 `GET /events/{eventId}` endpoint) through the series of webhook messages. To this end, messages will attempt to provide payloads with schemas that can be dropped into existing
@@ -374,7 +374,7 @@ Example `data` contents:
 }
 ```
 
-### `typeChanged`
+### `alertTypeChanged`
 
 If an alert is detected incorrectly, it may be changed after it has been raised.
 
