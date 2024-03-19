@@ -17,7 +17,7 @@ Note: All requests in this document are expected to be authenticated as describe
 
 Testing the webhook is typically the first step done while developing a webhook event receiver. A test event can be triggered using the `POST /webhooks:test` endpoint.
 
-Example request:
+Example request for a validation test:
 
 `HTTP POST /v1/webhooks:test`
 
@@ -28,12 +28,14 @@ Example request:
 }
 ```
 
+_Note_: This is the simplest version of the request. It is intended to help develop the validation. Additional testing will be described below.
+
 ### Validation
 
-The only two validations performed on this payload are:
+The only two validations performed on this request are:
 
 1. The `url` must be HTTPS. HTTP is explicitly disallowed.
-2. The `namespace` must be a valid namespace. Currently the only supported namespace is `"securityAlerts"` but the field is included to allow for future expansion.
+2. The `namespace` must be a valid namespace. Currently, the only supported namespace is `"securityAlerts"` but the field is included to allow for future expansion.
 
 ### Request handling
 
@@ -42,7 +44,7 @@ The `/webhooks:test` endpoint just takes the request and immediately turns aroun
 ```json
 {
   "attempt": 1,
-  "currentAttemptTimestamp": "<<current datetime as an ISO-8601 string>>",
+  "currentAttemptTimestamp": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
   "action": "test",
   "namespace": "securityAlerts",
   "data": {
@@ -63,9 +65,10 @@ with a `204` if it received a successful response and a `400` if it was not succ
 
 To verify the HMAC, you will first need to fetch the public key from the URL provided in the header. The URL provided will always point the the `/publicKeys/{publicKeyId}` endpoint
 of the API. As per the [API specification](../../api-specs/api.yaml), that endpoint returns `application/x-pem-file` contents. This means the key does not need to be extracted from
-the response.
+the response. Note that this endpoint _is_ authenticated. It is also recommended to cache this URL to help avoid hitting rate limits to the API.
 
-Once the key has been fetched, the signature provided can be verified by using the public key, `SHA256` as the algorithm, and the entire request body stringified as the payload.
+Once the key has been fetched, the signature provided can be verified by using the public key, `SHA256` as the algorithm, base64 decoding, and the entire request body stringified as
+the payload.
 
 The following is a JavaScript example of a request handler function that may be used in an [Express application](https://expressjs.com/). Signature verification is done using
 the [Node.js crypto library](https://nodejs.org/api/crypto.html#class-verify). Error checking has been omitted for brevity.
@@ -77,7 +80,7 @@ async function requestHandler(request, response) {
   const publicKeyUrl = request.get('X-LVT-PUBKEY-URL');
   const signature = request.get('X-LVT-HMAC-SHA256');
 
-  // This URL should be cached by the webhook consumer.
+  // This request should be cached by the webhook consumer.
   const publicKeyRequest = await fetch(publicKeyUrl, {
     headers: {
       'Authorization': 'Bearer <<BEARER TOKEN>>'
@@ -100,11 +103,37 @@ async function requestHandler(request, response) {
 }
 ```
 
+### Testing specific actions
+
+After signature validation has been developed and is working, it may be helpful to test specific messages. To help with this a few optional parameters have been added to the test
+endpoint.
+
+#### `action` query parameter
+
+An `action` query parameter was added. If it is not included the `action` in the test message defaults to `test` and follows the behavior described above for signature
+validation testing. When a valid `action` is provided, the `data` field of the test message will match the example section provided in the docs (with timestamps being generated at
+the time of the request).
+
+#### `data` request body field
+
+Another optional parameter is a `data` field in the request body. This value must be an object, but is otherwise un-validated. Whatever is provided in this field will override the
+`data` value in the test message. The intended usage of this behavior is as follows:
+
+1. Copy the message schema for the type of message you are testing.
+2. Modify the data to contain the values you need in your test.
+3. Provide the modified data as the `data` field of the request body.
+4. Handle the request in your development environment.
+
+#### `mimeType` query parameter
+
+This helper only affect the `mediaAvailable` action when no `data` field is provided. It toggles whether the media contains an image or a video (defaults to video). Valid values are 
+`image/jpeg` and `video/mp4`. The IDs of the media for the image and video correspond to a real image and video that may be used for development.
+
 ## Creating a webhook
 
-After a URL has been tested, the webhook can then be created. The create command is similar to the test command but it has an extra `enabled` field. The URL is tested regardless of
-the `enabled` value. The only difference is that the URL will immediately receive event messages if `enabled` is `true`. A webhook can be enabled or disabled at any time using
-the `PATCH /webhooks/{webhookId}` endpoint.
+After a URL has been tested, the webhook can then be created. The create command is similar to the simple test command but it has an extra `enabled` field. The URL is tested
+regardless of the `enabled` value. The only difference is that the URL will immediately receive event messages if `enabled` is `true`. A webhook can be enabled or disabled at any
+time using the `PATCH /webhooks/{webhookId}` endpoint.
 
 ## Updating a webhook
 
@@ -113,12 +142,17 @@ with an HTTP `2XX` status code in order for the update operation to be executed.
 
 ## Error handling and retries
 
-If a webhook message is sent and does not receive an HTTP `2XX` response, it will begin a retry loop with an exponential backoff. The backoff waits `attempt^2` seconds for up to 10
-attempts before the webhook is disabled.
+If a webhook message is sent and does not receive an HTTP `2XX` response, it will begin a retry loop with an exponential backoff. The backoff waits `attempt ^ 2` seconds for up to
+10 attempts before the webhook is disabled.
 
 **Every webhook message needs to receive a success status.** Each webhook message is sent through the retry loop individually, meaning if two messages are sent, the first one
 receives a `500` error response and the second one receives a `200`, the first message will be retried and will potentially disable the webhook despite the fact that a later
 message has been handled successfully.
+
+## Consuming media
+
+You may notice that the `media` schema does not include a URL. Media is only available with signed URLs. Signed URLs must be requested using the `GET /media/{mediaId}/url` endpoint
+of the API.
 
 ## Message contents
 
@@ -146,118 +180,330 @@ Example:
 }
 ```
 
-As previously mentioned, the current version of webhooks only supports a single `securityAlerts` namespace. Within that namespace there are three actions that can trigger a webhook
-message.
+As previously mentioned, the current version of webhooks only supports a single `securityAlerts` namespace. Within that namespace there are several actions that can trigger a
+webhook message.
 
-The data in these messages is intended to reflect the schema of the `/alerts` endpoint of the API.
+| Action             | Description                                        |
+|--------------------|----------------------------------------------------|
+| `alertRaised`      | A new alert has been reported by a live unit.      |
+| `alertTypeChanged` | The type of an alert has changed.                  |
+| `eventRaised`      | A new event has been reported by a live unit.      |
+| `mediaAvailable`   | Media associated with an alert has been uploaded.  |
+| `noteAdded`        | A user has added a note to the event.              |
+| `resolved`         | A user has resolved the event.                     |
+| `userAssigned`     | A user has been assigned to investigate the event. |
 
-* `raised` uses the `securityAlert` schema from the response of a `GET /alerts/{alertId}` request.
-* `mediaAvailable` uses the same schema as a `media` item from the `securityAlert` schema.
-* `resolved` uses the same schema as a `resolution` field from the `securityAlert` schema.
+The data in these messages reflects the schema of the `/events` endpoint of the API. The intent is to allow clients to aggregate a full event (as if queried through the
+`GET /events/{eventId}` endpoint) through the series of webhook messages. To this end, messages will attempt to provide payloads with schemas that can be dropped into existing
+arrays or can replace event or alert fields.
 
-### `raised`
+The schema of the `data` field can be determined based on the `action`. Details are described below.
 
-When the `action` is `raised` you can expect the following schema:
+_Note_: Custom types are described in the _Types_ section under the message descriptions.
 
-| field                   | type                        | description                                                                                                                                                                                    |
-|-------------------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `cameraId`              | string (UUID)               | The ID of the camera that triggered the security alert.                                                                                                                                        |
-| `cameraRole`            | string                      | The role of the camera on the live unit (if it has one).                                                                                                                                       |
-| `cause`                 | string                      | A category for the type of action that triggered the security alert.                                                                                                                           |
-| `clientId`              | string (UUID)               | The ID of the client that owns the live unit.                                                                                                                                                  |
-| `clientName`            | string                      | The name of the client that owns the live unit.                                                                                                                                                |
-| `coordinates.latitude`  | float                       | The coordinate latitude value.                                                                                                                                                                 |
-| `coordinates.longitude` | float                       | The coordinate longitude value.                                                                                                                                                                |
-| `coordinates`           | object                      | GPS coordinates of the unit raising the security alert.                                                                                                                                        |
-| `id`                    | integer (1 - 10)            | The unique identifier for the security alert.                                                                                                                                                  |
-| `liveUnitId`            | string (UUID)               | The ID of the live unit raising the security alert.                                                                                                                                            |
-| `liveUnitName`          | string                      | The user assigned name of the live unit raising the security alert.                                                                                                                            |
-| `locationId`            | string (UUID)               | The ID of the location the live unit is assigned to.                                                                                                                                           |
-| `locationName`          | string                      | The user assigned name of the location the live unit is assigned to.                                                                                                                           |
-| `locationTimezone`      | string (ISO-8601 timestamp) | The local timezone of the live unit.                                                                                                                                                           |
-| `media`                 | array                       | An array of media files associated with the security alert. (This will always be empty in the initial webhook message).                                                                        |
-| `resolution`            | object                      | The details about the security alert resolution. (This will always be `null` for the initial webhook message).                                                                                 |
-| `state`                 | string                      | The state of the security alert. (This will always be `unresolved` in the initial webhook message).                                                                                            |
-| `subject`               | string                      | The subject of the security alert (if applicable). For example, if the `cause` is `intrusion` this field may indicate that the subject of the intrusion was a `human`, `animal`, or `vehicle`. |
-| `timestamp`             | string (IS0-8601 timestamp) | The timestamp of when the security alert was raised.                                                                                                                                           |
+### `eventRaised`
+
+This should be the first message received in the context of an event. The `data` field matches the response of a `GET /alerts/{alertId}` request:
+
+| Field          | Type            | Description                                                                           |
+|----------------|-----------------|---------------------------------------------------------------------------------------|
+| `alerts`       | array (`alert`) | A list of alerts raised during the event.                                             |
+| `client`       | `client`        | Details about the client which owned the unit when the event was raised.              |
+| `id`           | string (UUID)   | The unique identifier for the event.                                                  |
+| `liveUnit`     | `liveUnit`      | Details about the live unit that raised the event.                                    |
+| `location`     | `location`      | Details about the location the live unit was at when the event was raised.            |
+| `notes`        | array (`note`)  | A list of notes describing the event.                                                 |
+| `priority`     | string          | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`. | 
+| `resolution`   | `resolution`    | Details about the resolution of the event.                                            |
+| `assignedUser` | `user`          | Details about the user assigned to investigate the event.                             |
 
 Example `data` contents:
 
 ```json
 {
-  "cameraId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "cameraRole": "primary",
-  "cause": "loitering",
-  "clientId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "clientName": "string",
-  "coordinates": {
+  "id": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "alerts": [],
+  "client": {
+    "id": "d4f2313e-e56b-11ee-bd3d-0242ac120002",
+    "name": "LiveView Technologies"
+  },
+  "location": {
+    "id": "dcbcb24a-e56b-11ee-bd3d-0242ac120002",
+    "name": "HQ",
+    "timezone": "America/Denver",
     "latitude": 40.123456,
     "longitude": -111.789
   },
-  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "liveUnitId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "liveUnitName": "string",
-  "locationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "locationName": "string",
-  "locationTimezone": "string",
-  "media": [],
+  "liveUnit": {
+    "id": "e0dd0618-e56b-11ee-bd3d-0242ac120002",
+    "name": "Houston"
+  },
+  "notes": [],
   "resolution": null,
-  "state": "unresolved",
-  "subject": "human",
-  "timestamp": "2023-12-08T17:04:43.164Z"
+  "priority": "medium",
+  "assignedUser": null
 }
 ```
 
-### `mediaAvailable`
+_Note_: `alerts` and `notes` are always expected to be empty arrays in an `eventRaised` message. `resolution` and `assignedUser` are also always expected to be `null`.
 
-When the `action` is `mediaAvailable` you can expect the following schema:
+### `alertRaised`
 
-| field             | type                        | description                                                                                                                                                                                                                            |
-|-------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `cameraId`        | string (UUID)               | The ID of the camera that captured the media.                                                                                                                                                                                          |
-| `cameraRole`      | string                      | The role of the camera that captured the media.                                                                                                                                                                                        |
-| `mimeType`        | string                      | The mime type of the media.                                                                                                                                                                                                            |
-| `securityAlertId` | string (UUID)               | The ID of the security alert the media is associated with.                                                                                                                                                                             |
-| `timestamp`       | string (ISO-8601 timestamp) | The timestamp of when the media was captured.                                                                                                                                                                                          |
-| `url`             | string                      | A signed URL to retrieve the media. This URL will only be valid for 2 hours. To fetch the media again after the link has expired, a `GET /alerts/{securityAlertId}` request needs to be made which will refresh the URLs of the media. |
+After an event is raised, at least one alert will be raised.
+
+| Field     | Type          | Description                               |
+|-----------|---------------|-------------------------------------------|
+| `alert`   | `alert`       | The alert object.                         |
+| `eventId` | string (UUID) | The ID of the event the alert belongs to. |
+
+The `alert` field can be appended to the `events[eventId].alerts` array.
 
 Example `data` contents:
 
 ```json
 {
-  "cameraId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "cameraRole": "string",
-  "mimeType": "image/jpeg",
-  "securityAlertId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "timestamp": "2023-12-08T17:04:43.164Z",
-  "url": "https://cdn.lvt.com/alerts/security/202/20230928150412/1121.jpg?Expires=1695924513&Key-Pair-Id=MZ1Z1ZZNSPSL2&Signature=3fWTV-M0bAdXiFhjbLSU~iMKDAcbHKxxZfEOZJT3t2031cfrqNWfizjxyilmSNiuxxq39vHPdQQO3cF9WKKpVcPczVFcTUbEAUyDVA12akUexegBomwPkf4PcJgnEQr~-vp6wtzUawYHPYpNaH32xSaWKGxqOleq-c8F~5~4kI6MjuFFZylKLAdzQ1Oan4ujlnBfpbQPWKU-pBT8FotaefzjAZLGtzUtR37oNRK0j687p6vZyQIqsg~r-MDY5ZJZBZk3G02Dl0LkpcpzHf-xI~IHGhlQ4B~9JLDeFLCLrvFC47sOww7We8J4QkI8RyuoetV3ChegywIHVM0U1qFT0Q__"
+  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "alert": {
+    "id": "665a608a-e56a-11ee-bd3d-0242ac120002",
+    "eventTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
+    "media": [],
+    "alertType": {
+      "id": "ee8ffd88-e56b-11ee-bd3d-0242ac120002",
+      "name": "Test Alert"
+    },
+    "camera": {
+      "id": "f4670742-e56b-11ee-bd3d-0242ac120002",
+      "mountPosition": "center",
+      "thermal": false,
+      "viewType": "panoramic"
+    }
+  }
+}
+```
+
+_Note_: `media` is always expected to be empty in an `alertRaised` message.
+
+### `mediaAvailable`
+
+A live unit raises an alert as it is uploading alert recordings and images. Once the media has successfully uploaded, a `mediaAvailable` message will be sent.
+
+| Field     | Type          | Description                               |
+|-----------|---------------|-------------------------------------------|
+| `alertId` | string (UUID) | The ID of the alert the media belongs to. |
+| `eventId` | string (UUID) | The ID of the event the alert belongs to. |
+| `media`   | `media`       | The media object.                         |
+
+The `media` field can be appended to the `events[eventId].alerts[alertId].media` array.
+
+Example `data` contents:
+
+```json
+{
+  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "alertId": "665a608a-e56a-11ee-bd3d-0242ac120002",
+  "media": {
+    "id": "bb4af400-e56b-11ee-bd3d-0242ac120002",
+    "mimeType": "video/mp4",
+    "timestamp": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
+    "camera": {
+      "id": "f4670742-e56b-11ee-bd3d-0242ac120002",
+      "mountPosition": "center",
+      "thermal": false,
+      "viewType": "panoramic"
+    }
+  }
+}
+```
+
+_Note_: The media ID in the example can be used to view an actual test video using the `GET /media/{mediaId}` endpoint. `9c20e508-e575-11ee-bd3d-0242ac120002` can be used to view 
+an actual test image using the same endpoint.
+
+### `noteAdded`
+
+During the investigation of an event, a user may add notes about the event. Notes are owned by an event and not by alerts.
+
+| Field     | Type          | Description                              |
+|-----------|---------------|------------------------------------------|
+| `eventId` | string (UUID) | The ID of the event the note belongs to. |
+| `note`    | `note`        | The note object.                         |
+
+The `note` field can be appended to the `events[eventId].notes` array.
+
+Example `data` contents:
+
+```json
+{
+  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "note": {
+    "id": "26daa4b8-e56c-11ee-bd3d-0242ac120002",
+    "message": "This is a note",
+    "user": {
+      "id": "2be3bb16-e56c-11ee-bd3d-0242ac120002",
+      "name": "John Doe"
+    },
+    "createdTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
+    "updatedTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>"
+  }
 }
 ```
 
 ### `resolved`
 
-When the `action` is `resolved` you can expect the following schema:
+When a resolution is posted, due to the asynchronous nature of the events, other messages such as media-available, alert-raised, etc., may still be received.
 
-| field                       | type            | description                                                                        |
-|-----------------------------|-----------------|------------------------------------------------------------------------------------|
-| `note`                      | object          | Additional notes left by the user describing the resolution.                       |
-| `resolveInitiatedTimestamp` | string          | The timestamp of when the security alert was resolved by the user.                 |
-| `resolvedTimestamp`         | object          | The timestamp of when the security alert resolution was received by the live unit. |
-| `securityAlertId`           | string (UUID)   | The ID of the security alert the media is associated with.                         |
-| `tags`                      | array (string)  | A list of tags that the resolution was categorized with.                           |
-| `userId`                    | ISO-8601 string | The ID of the user who resolved the security alert.                                |
+| Field        | Type          | Description                                    |
+|--------------|---------------|------------------------------------------------|
+| `eventId`    | string (UUID) | The ID of the event the resolution belongs to. |
+| `resolution` | `resolution`  | The resolution object.                         |
+
+The `resolution` field can replace the `events[eventId].resolution` property.
 
 Example `data` contents:
 
 ```json
 {
-  "note": "They stole the declaration of independence.",
-  "resolveInitiatedTimestamp": "2023-12-08T17:04:43.164Z",
-  "resolvedTimestamp": "2023-12-08T17:04:43.164Z",
-  "securityAlertId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "tags": [
-    "theft"
-  ],
-  "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "resolution": {
+    "name": "Authorities Dispatched",
+    "resolvedTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
+    "user": {
+      "id": "2be3bb16-e56c-11ee-bd3d-0242ac120002",
+      "name": "John Doe"
+    }
+  }
 }
 ```
+
+### `alertTypeChanged`
+
+If an alert is detected incorrectly, it may be changed after it has been raised.
+
+| Field       | Type          | Description                                   |
+|-------------|---------------|-----------------------------------------------|
+| `alertId`   | string (uuid) | The ID of the alert the alertType belongs to. |
+| `alertType` | `alertType`   | The alertType object.                         |
+| `eventId`   | string (uuid) | The ID of the event the alert belongs to.     |
+
+The `alertType` field can replace the `events[eventId].alerts[alertId].alertType` property.
+
+Example `data` contents:
+
+```json
+{
+  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "alertId": "665a608a-e56a-11ee-bd3d-0242ac120002",
+  "alertType": {
+    "id": "ee8ffd88-e56b-11ee-bd3d-0242ac120002",
+    "name": "Test Alert"
+  }
+}
+```
+
+### `userAssigned`
+
+A user may be assigned to investigate the event. When the user is assigned or a user is re-assigned, a webhook message is sent.
+
+| Field          | Type          | Description                               |
+|----------------|---------------|-------------------------------------------|
+| `assignedUser` | `user`        | The user that was assigned to the event.  |
+| `eventId`      | string (uuid) | The ID of the event the alert belongs to. |
+
+The `assignedUser` field can replace the `events[eventId].assignedUser` property.
+
+Example `data` contents:
+
+```json
+{
+  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "assignedUser": {
+    "id": "2be3bb16-e56c-11ee-bd3d-0242ac120002",
+    "name": "John Doe"
+  }
+}
+```
+
+## Types
+
+### `alert`
+
+| Field       | Type              | Description                                            |
+|-------------|-------------------|--------------------------------------------------------|
+| `alertTime` | string (ISO-8601) | The timestamp at which the alert was triggered.        |
+| `alertType` | `alertType`       | The classification of the alert.                       |
+| `camera`    | `camera`          | Details about the camera that triggered the alert.     |
+| `id`        | string (UUID)     | The unique identifier for the alert.                   |
+| `media`     | array (`media`)   | A list of media captured when the alert was triggered. |
+
+### `alertType`
+
+| Field  | Type          | Description                                        |
+|--------|---------------|----------------------------------------------------|
+| `id`   | string (UUID) | The unique identifier for the alertType.           |
+| `name` | string        | The name of the alert type. i.e. Animal Detection. |
+
+### `camera`
+
+| Field           | Type          | Description                                                                                                                                                      |
+|-----------------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `id`            | string (UUID) | The unique identifier for the camera.                                                                                                                            |
+| `mountPosition` | string        | The position the camera is mounted on the live unit. Valid values are described in the [OpenApi specification](../../api-specs/api.yaml) in the `camera` schema. |
+| `thermal`       | boolean       | Whether the camera is a thermal camera.                                                                                                                          |
+| `viewType`      | string        | The type of view a camera has. Valid values are described in the [OpenApi specification](../../api-specs/api.yaml) in the `camera` schema.                       |
+
+### `client`
+
+| Field  | Type          | Description                           |
+|--------|---------------|---------------------------------------|
+| `id`   | string (UUID) | The unique identifier for the client. |
+| `name` | string        | The name of the client.               |
+
+### `liveUnit`
+
+| Field  | Type          | Description                              |
+|--------|---------------|------------------------------------------|
+| `id`   | string (UUID) | The unique identifier for the live unit. |
+| `name` | string        | The name of the live unit.               |
+
+### `location`
+
+| Field       | Type           | Description                                                        |
+|-------------|----------------|--------------------------------------------------------------------|
+| `id`        | string (UUID)  | The unique identifier for the location.                            |
+| `latitude`  | number (float) | The GPS latitude value of the location.                            |
+| `longitude` | number (float) | The GPS longitude value of the location.                           |
+| `name`      | string         | The name of the location.                                          |
+| `timezone`  | string         | The timezone identifier the location is in. i.e. `America/Denver`. |
+
+### `media`
+
+| Field       | Type               | Description                                   |
+|-------------|--------------------|-----------------------------------------------|
+| `camera`    | `camera`           | The camera that captured the media.           |
+| `id`        | string (UUID)      | The unique identifier for the media.          |
+| `mimeType`  | string (mime type) | The mime type of the media.                   |
+| `timestamp` | string (ISO-8601)  | The timestamp of when the media was captured. |
+
+### `note`
+
+| Field         | Type              | Description                                      |
+|---------------|-------------------|--------------------------------------------------|
+| `createdTime` | string (ISO-8601) | The timestamp of when the note was created.      |
+| `id`          | string (UUID)     | The unique identifier for the note.              |
+| `message`     | string            | The contents of the note.                        |
+| `updatedTime` | string (ISO-8601) | The timestamp of when the note was last updated. |
+| `user`        | `user`            | The user who created the note.                   |
+
+### `resolution`
+
+| Field          | Type              | Description                                   |
+|----------------|-------------------|-----------------------------------------------|
+| `name`         | string            | Short name for the resolution type.           |
+| `resolvedTime` | string (ISO-8601) | The timestamp of when the event was resolved. |
+| `user`         | `user`            | The user who resolved the event.              |
+
+### `user`
+
+| Field  | Type          | Description                         |
+|--------|---------------|-------------------------------------|
+| `id`   | string (UUID) | The unique identifier for the user. |
+| `name` | string        | The name of the user.               |
