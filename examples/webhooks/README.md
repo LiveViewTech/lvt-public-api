@@ -67,8 +67,8 @@ To verify the HMAC, you will first need to fetch the public key from the URL pro
 of the API. As per the [API specification](../../api-specs/api.yaml), that endpoint returns `application/x-pem-file` contents. This means the key does not need to be extracted from
 the response. Note that this endpoint _is_ authenticated. It is also recommended to cache this URL to help avoid hitting rate limits to the API.
 
-Once the key has been fetched, the signature provided can be verified by using the public key, `SHA256` as the algorithm, base64 decoding, and the entire request body stringified as
-the payload.
+Once the key has been fetched, the signature provided can be verified by using the public key, `SHA256` as the algorithm, base64 decoding, and the entire request body stringified
+as the payload.
 
 The following is a JavaScript example of a request handler function that may be used in an [Express application](https://expressjs.com/). Signature verification is done using
 the [Node.js crypto library](https://nodejs.org/api/crypto.html#class-verify). Error checking has been omitted for brevity.
@@ -126,8 +126,8 @@ Another optional parameter is a `data` field in the request body. This value mus
 
 #### `mimeType` query parameter
 
-This helper only affect the `mediaAvailable` action when no `data` field is provided. It toggles whether the media contains an image or a video (defaults to video). Valid values are 
-`image/jpeg` and `video/mp4`. The IDs of the media for the image and video correspond to a real image and video that may be used for development.
+This helper only affect the `mediaAvailable` action when no `data` field is provided. It toggles whether the media contains an image or a video (defaults to video). Valid values
+are `image/jpeg` and `video/mp4`. The IDs of the media for the image and video correspond to a real image and video that may be used for development.
 
 ## Creating a webhook
 
@@ -171,7 +171,7 @@ Example:
 
 ```json
 {
-  "action": "raised",
+  "action": "eventRaised",
   "attempt": 3,
   "currentAttemptTimestamp": "2024-01-16T19:34:16.335Z",
   "data": {},
@@ -205,23 +205,25 @@ _Note_: Custom types are described in the _Types_ section under the message desc
 
 This should be the first message received in the context of an event. The `data` field matches the response of a `GET /alerts/{alertId}` request:
 
-| Field          | Type            | Description                                                                           |
-|----------------|-----------------|---------------------------------------------------------------------------------------|
-| `alerts`       | array (`alert`) | A list of alerts raised during the event.                                             |
-| `client`       | `client`        | Details about the client which owned the unit when the event was raised.              |
-| `id`           | string (UUID)   | The unique identifier for the event.                                                  |
-| `liveUnit`     | `liveUnit`      | Details about the live unit that raised the event.                                    |
-| `location`     | `location`      | Details about the location the live unit was at when the event was raised.            |
-| `notes`        | array (`note`)  | A list of notes describing the event.                                                 |
-| `priority`     | string          | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`. | 
-| `resolution`   | `resolution`    | Details about the resolution of the event.                                            |
-| `assignedUser` | `user`          | Details about the user assigned to investigate the event.                             |
+| Field          | Type              | Description                                                                           |
+|----------------|-------------------|---------------------------------------------------------------------------------------|
+| `alerts`       | array (`alert`)   | A list of alerts raised during the event.                                             |
+| `client`       | `client`          | Details about the client which owned the unit when the event was raised.              |
+| `eventTime`    | string (ISO-8601) | The time the event was triggered.                                                     | 
+| `id`           | string (UUID)     | The unique identifier for the event.                                                  |
+| `liveUnit`     | `liveUnit`        | Details about the live unit that raised the event.                                    |
+| `location`     | `location`        | Details about the location the live unit was at when the event was raised.            |
+| `notes`        | array (`note`)    | A list of notes describing the event.                                                 |
+| `priority`     | string            | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`. | 
+| `resolution`   | `resolution`      | Details about the resolution of the event.                                            |
+| `assignedUser` | `user`            | Details about the user assigned to investigate the event.                             |
 
 Example `data` contents:
 
 ```json
 {
   "id": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "eventTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
   "alerts": [],
   "client": {
     "id": "d4f2313e-e56b-11ee-bd3d-0242ac120002",
@@ -265,7 +267,7 @@ Example `data` contents:
   "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
   "alert": {
     "id": "665a608a-e56a-11ee-bd3d-0242ac120002",
-    "eventTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
+    "alertTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
     "media": [],
     "alertType": {
       "id": "ee8ffd88-e56b-11ee-bd3d-0242ac120002",
@@ -315,7 +317,7 @@ Example `data` contents:
 }
 ```
 
-_Note_: The media ID in the example can be used to view an actual test video using the `GET /media/{mediaId}` endpoint. `9c20e508-e575-11ee-bd3d-0242ac120002` can be used to view 
+_Note_: The media ID in the example can be used to view an actual test video using the `GET /media/{mediaId}` endpoint. `9c20e508-e575-11ee-bd3d-0242ac120002` can be used to view
 an actual test image using the same endpoint.
 
 ### `noteAdded`
@@ -426,13 +428,13 @@ Example `data` contents:
 
 ### `alert`
 
-| Field       | Type              | Description                                            |
-|-------------|-------------------|--------------------------------------------------------|
-| `alertTime` | string (ISO-8601) | The timestamp at which the alert was triggered.        |
-| `alertType` | `alertType`       | The classification of the alert.                       |
-| `camera`    | `camera`          | Details about the camera that triggered the alert.     |
-| `id`        | string (UUID)     | The unique identifier for the alert.                   |
-| `media`     | array (`media`)   | A list of media captured when the alert was triggered. |
+| Field       | Type                  | Description                                                                                                                                                                            |
+|-------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `alertTime` | string (ISO-8601)     | The timestamp at which the alert was triggered.                                                                                                                                        |
+| `alertType` | `alertType` \| `null` | The classification of the alert. Value is `null` if the system has not automatically detected the `alertType`. This can & should be updated with a follow-up `alertTypeChanged` event. |
+| `camera`    | `camera` \| `null`    | Details about the camera that triggered the alert. Value is `null` if the alert was not triggered by a camera (i.e. power-loss or base-entry).                                         |
+| `id`        | string (UUID)         | The unique identifier for the alert.                                                                                                                                                   |
+| `media`     | array (`media`)       | A list of media captured when the alert was triggered.                                                                                                                                 |
 
 ### `alertType`
 
