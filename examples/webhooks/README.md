@@ -205,18 +205,18 @@ _Note_: Custom types are described in the _Types_ section under the message desc
 
 This should be the first message received in the context of an event. The `data` field matches the response of a `GET /alerts/{alertId}` request:
 
-| Field          | Type              | Description                                                                           |
-|----------------|-------------------|---------------------------------------------------------------------------------------|
-| `alerts`       | array (`alert`)   | A list of alerts raised during the event.                                             |
-| `client`       | `client`          | Details about the client which owned the unit when the event was raised.              |
-| `eventTime`    | string (ISO-8601) | The time the event was triggered.                                                     | 
-| `id`           | string (UUID)     | The unique identifier for the event.                                                  |
-| `liveUnit`     | `liveUnit`        | Details about the live unit that raised the event.                                    |
-| `location`     | `location`        | Details about the location the live unit was at when the event was raised.            |
-| `notes`        | array (`note`)    | A list of notes describing the event.                                                 |
-| `priority`     | string            | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`. | 
-| `resolution`   | `resolution`      | Details about the resolution of the event.                                            |
-| `assignedUser` | `user`            | Details about the user assigned to investigate the event.                             |
+| Field          | Type                   | Description                                                                                                   |
+|----------------|------------------------|---------------------------------------------------------------------------------------------------------------|
+| `alerts`       | array (`alert`)        | A list of alerts raised during the event.                                                                     |
+| `client`       | `client`               | Details about the client which owned the unit when the event was raised.                                      |
+| `eventTime`    | string (ISO-8601)      | The time the event was triggered.                                                                             | 
+| `id`           | string (UUID)          | The unique identifier for the event.                                                                          |
+| `liveUnit`     | `liveUnit`             | Details about the live unit that raised the event.                                                            |
+| `location`     | `location`             | Details about the location the live unit was at when the event was raised.                                    |
+| `notes`        | array (`note`)         | A list of notes describing the event.                                                                         |
+| `priority`     | string                 | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`.                         | 
+| `resolution`   | `resolution` \| `null` | Details about the resolution of the event. This value is null if the event has not been resolved.             |
+| `assignedUser` | `user` \| `null`       | Details about the user assigned to investigate the event. This value is null if a user has not been assigned. |
 
 Example `data` contents:
 
@@ -366,6 +366,7 @@ Example `data` contents:
 {
   "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
   "resolution": {
+    "id": "91f55ac4-ec68-11ee-a951-0242ac120002",
     "name": "Authorities Dispatched",
     "resolvedTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
     "user": {
@@ -468,13 +469,13 @@ Example `data` contents:
 
 ### `location`
 
-| Field       | Type           | Description                                                        |
-|-------------|----------------|--------------------------------------------------------------------|
-| `id`        | string (UUID)  | The unique identifier for the location.                            |
-| `latitude`  | number (float) | The GPS latitude value of the location.                            |
-| `longitude` | number (float) | The GPS longitude value of the location.                           |
-| `name`      | string         | The name of the location.                                          |
-| `timezone`  | string         | The timezone identifier the location is in. i.e. `America/Denver`. |
+| Field       | Type                     | Description                                                                                     |
+|-------------|--------------------------|-------------------------------------------------------------------------------------------------|
+| `id`        | string (UUID)            | The unique identifier for the location.                                                         |
+| `latitude`  | number (float) \| `null` | The GPS latitude value of the location. Or null if the location does not have GPS coordinates.  |
+| `longitude` | number (float) \| `null` | The GPS longitude value of the location. Or null if the location does not have GPS coordinates. |
+| `name`      | string                   | The name of the location.                                                                       |
+| `timezone`  | string                   | The timezone identifier the location is in. i.e. `America/Denver`.                              |
 
 ### `media`
 
@@ -499,6 +500,7 @@ Example `data` contents:
 
 | Field          | Type              | Description                                   |
 |----------------|-------------------|-----------------------------------------------|
+| `id`           | string (UUID)     | The unique identifier for the resolution.     |
 | `name`         | string            | Short name for the resolution type.           |
 | `resolvedTime` | string (ISO-8601) | The timestamp of when the event was resolved. |
 | `user`         | `user`            | The user who resolved the event.              |
