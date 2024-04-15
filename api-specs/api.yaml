@@ -925,49 +925,6 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /alerts/events/alerts/{id}:changeType:
-    post:
-      summary: Change the type of an alert
-      description: Change the type of an Alert with the provided ID.
-      tags: [Alerts]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The UUID of the specific alert to fetch.
-          schema:
-            type: string
-            format: uuid
-          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - typeId
-              properties:
-                typeId:
-                  type: string
-                  description: The UUID of the specific alertType.
-
-      responses:
-        200:
-          $ref: '#/components/responses/updatedObject'
-        '400':
-          $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '404':
-          $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
-
   /alerts/media/{mediaId}/url:
     get:
       summary: Get a signed url for media
