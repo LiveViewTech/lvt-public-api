@@ -723,131 +723,30 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /alerts:
+  /alerts/events:
     get:
-      operationId: GetAlerts
-      tags:
-        - Alerts
-      summary: Get all alerts a user has access to
-      description: >
-        **Phase 2**:
-        Get all alerts a user has access to
+      summary: Get Events
+      description: Get a list of Events. By default it returns all owned Events, but can be filtered using the query parameters.
+      tags: [Events]
       parameters:
         - $ref: '#/components/parameters/count'
         - $ref: '#/components/parameters/cursor'
-        - name: state
+        - name: archived
           in: query
-          description: >
-            Filters the alerts response to only include alerts with `state` values that are included in the provided comma separated list.
-            You can get a list of valid states from `/alerts/types`.
+          description: Filter by archived status
           schema:
-            type: string
-            example: resolved
-        - name: startTimestamp
-          in: query
-          description: ISO 8601 formatted string. Filters alerts where the `timestamp` is after the provided `startTimestamp`.
-          schema:
-            type: string
-            format: date-time
-            example: 2023-01-01T12:00:00.000Z
-        - name: endTimestamp
-          in: query
-          description: ISO 8601 formatted string. Filters alerts where the `timestamp` is before the provided `endTimestamp`.
-          schema:
-            type: string
-            format: date-time
-            example: 2023-01-01T12:00:00.000Z
-        - name: locationId
-          in: query
-          description: Filters the alerts response to only include alerts with `locationId` values that are included in the provided comma separated list.
-          schema:
-            type: string
-            format: uuid
-            example: 460092aa-aeec-4bef-b206-1a3a4b4dc4d9,cf2c38d9-ee33-4ce4-a6d6-82ddec364c76
-        - name: cause
-          in: query
-          description: >
-            Filters the alerts response to only include alerts with `cause` values that are included in the provided comma separated list.
-            You can get a list of valid causes from `/alerts/types`.
-          schema:
-            type: string
-            example: intrusion,loitering
-        - name: subject
-          in: query
-          description: >
-            Filters the alerts response to only include alerts with `subject` values that are included in the provided comma separated list.
-            Use "null" to include alerts with `null` subjects.
-            You can get a list of valid subjects from `/alerts/types`.
-          schema:
-            type: string
-            example: human,vehicle,null
+            $ref: '#/components/schemas/alertEventActiveQuery'
       responses:
         200:
-          description: A list of alerts.
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/alerts'
+                $ref: '#/components/schemas/alertEvents'
         '400':
           $ref: '#/components/responses/400'
-        '403':
-          $ref: '#/components/responses/403'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
-
-  /alerts/types:
-    get:
-      operationId: GetAlertTypes
-      tags:
-        - Alerts
-      summary: Get alert types
-      description: >
-        **Phase 2**:
-        Get all valid enumeration types relevant to an alert.
-        This includes alert causes, alert subjects (sub-classification of the "intrusion" alert cause), and resolution tags.
-        <br/><br/>
-        This endpoint will be mostly static however, as new values become supported they will be added to this response.
-      responses:
-        200:
-          description: An object containing valid enum values.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/alertTypes'
-        '403':
-          $ref: '#/components/responses/403'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
-
-  /alerts/{alertId}:
-    get:
-      operationId: GetAlert
-      tags:
-        - Alerts
-      summary: Get a single alert
-      description: >
-        **Phase 2**:
-        Get a single alert
-      parameters:
-        - name: alertId
-          in: path
-          description: The ID of the alert
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: A single alert
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/alert'
-        '400':
-          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -857,33 +756,248 @@ paths:
         default:
           $ref: '#/components/responses/defaultError'
 
-  /alerts/{alertId}:resolve:
-    post:
-      operationId: ResolveAlert
-      tags:
-        - Alerts
-      summary: Resolve a single alert
-      description: >
-        **Phase 2**:
-        Resolve a single alert
+  /alerts/events/{id}:
+    get:
+      summary: Get a AlertEvent
+      description: Get a AlertEvent with the provided ID.
+      tags: [Events]
       parameters:
-        - name: alertId
+        - name: id
           in: path
-          description: The ID of the alert
           required: true
+          description: The UUID of the specific alertEvent to fetch.
           schema:
             type: string
-      requestBody:
-        $ref: '#/components/requestBodies/resolveAlert'
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
       responses:
-        202:
-          description: The resolve process has been initiated
+        200:
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/alertResolution'
+                $ref: '#/components/schemas/alertEvent'
         '400':
           $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+  /alerts/events/{id}:addNote:
+    post:
+      summary: Create a Note
+      description: Create a new Note for the AlertEvent with the provided ID.
+      tags: [Events]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The UUID of the specific alertEvent to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - message
+              properties:
+                userId:
+                  type: string
+                  description: The UUID of the specific user that added the note.
+                message:
+                  type: string
+      responses:
+        200:
+          $ref: '#/components/responses/createdObject'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+  /alerts/events/{id}:resolve:
+    post:
+      summary: Resolve an event
+      description: Resolve an AlertEvent with the provided ID.
+      tags: [Events]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The UUID of the specific alertEvent to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - resolutionId
+                - resolutionTime
+              properties:
+                resolutionId:
+                  type: string
+                resolutionTime:
+                  type: string
+                  format: date-time
+                  example: 2023-01-01T12:00:00.000Z
+                note:
+                  type: string
+
+      responses:
+        200:
+          $ref: '#/components/responses/updatedObject'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+  /alerts/events/{id}:assignUser:
+    post:
+      summary: Assign a user to an event
+      description: Assign a user to an AlertEvent with the provided ID.
+      tags: [Events]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The UUID of the specific alertEvent to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+                  nullable: true
+                  description: The UUID of the specific user to assign. Null to unassign a user.
+
+      responses:
+        200:
+          $ref: '#/components/responses/updatedObject'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts/events/alerts/{id}:changeType:
+    post:
+      summary: Change the type of an alert
+      description: Change the type of an Alert with the provided ID.
+      tags: [Alerts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The UUID of the specific alert to fetch.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - typeId
+              properties:
+                typeId:
+                  type: string
+                  description: The UUID of the specific alertType.
+
+      responses:
+        200:
+          $ref: '#/components/responses/updatedObject'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /alerts/media/{mediaId}/url:
+    get:
+      summary: Get a signed url for media
+      description: Get a signed url for the provided ID.
+      tags: [Media]
+      parameters:
+        - name: mediaId
+          in: path
+          required: true
+          description: The UUID of the specific media to sign.
+          schema:
+            type: string
+            format: uuid
+          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    example: https://cdn.lvt.com/static/images/image.jpg
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
         '404':
@@ -1205,6 +1319,30 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/error'
+
+    createdObject:
+      description: The object was created successfully.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                description: The UUID of the created object
+
+    updatedObject:
+      description: The object was updated successfully.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                description: The UUID of the updated object
 
   parameters:
     count:
@@ -1668,143 +1806,233 @@ components:
         - unassigned
       example: center
 
-    alertMedia:
+    alertEvent:
       type: object
-      required:
-        - cameraId
-        - cameraMountPosition
-        - mimeType
-        - timestamp
-        - url
-      properties:
-        cameraId:
-          type: string
-          format: uuid
-          description: The ID of the camera the media was taken from
-        cameraMountPosition:
-          $ref: '#/components/schemas/cameraMountPosition'
-        mimeType:
-          type: string
-          format: mime
-          description: The mime type of the media
-          example: image/jpeg
-        timestamp:
-          type: string
-          format: date-time
-          description: ISO 8601 formatted date-time string of when the media was captured
-        url:
-          type: string
-          format: url
-          description: Signed URL to access the media. Default expiration is 2 hours.
-          example: 'https://cdn.lvt.com/alerts/security/202/20230928150412/1121.jpg?Expires=1695924513&Key-Pair-Id=MZ1Z1ZZNSPSL2&Signature=3fWTV-M0bAdXiFhjbLSU~iMKDAcbHKxxZfEOZJT3t2031cfrqNWfizjxyilmSNiuxxq39vHPdQQO3cF9WKKpVcPczVFcTUbEAUyDVA12akUexegBomwPkf4PcJgnEQr~-vp6wtzUawYHPYpNaH32xSaWKGxqOleq-c8F~5~4kI6MjuFFZylKLAdzQ1Oan4ujlnBfpbQPWKU-pBT8FotaefzjAZLGtzUtR37oNRK0j687p6vZyQIqsg~r-MDY5ZJZBZk3G02Dl0LkpcpzHf-xI~IHGhlQ4B~9JLDeFLCLrvFC47sOww7We8J4QkI8RyuoetV3ChegywIHVM0U1qFT0Q__'
-
-    alertResolution:
-      type: object
-      description: Details about an alert resolution
-      required:
-        - tags
-        - userId
-        - resolveInitiatedTimestamp
-      properties:
-        tags:
-          type: array
-          description: List of tags associated with the resolution
-          minimum: 1
-          items:
-            type: string
-            example: theft
-        userId:
-          type: string
-          format: uuid
-          description: The UUID of the user who resolved the alert.
-        resolvedInitiatedTimestamp:
-          type: string
-          format: date-time
-          description: ISO 8601 formatted date-time for when the resolution was initiated.
-        note:
-          type: string
-          description: Additional notes provided with the resolution. Optional unless `other` is used in the tags.
-        resolvedTimestamp:
-          type: string
-          format: date-time
-          description: ISO 8601 formatted date-time for when the alert was resolved.
-
-    alert:
-      type: object
-      required:
-        - id
-        - timestamp
-        - cameraId
-        - cameraMountPosition
-        - cause
-        - clientId
-        - liveUnitId
-        - locationId
-        - media
-        - state
       properties:
         id:
           type: string
           format: uuid
-          description: The id of the alert
-        timestamp:
+          description: The UUID of the event
+        eventTime:
           type: string
           format: date-time
-          description: ISO 8601 formatted date-time for when the alert was raised
-        cameraId:
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the first alert was triggered
+          example: 2023-01-01T12:00:00.000Z
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/alert'
+        assignedUser:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/alertUser'
+        client:
+          $ref: '#/components/schemas/alertClient'
+        location:
+          $ref: '#/components/schemas/alertLocation'
+        liveUnit:
+          $ref: '#/components/schemas/alertLiveUnit'
+        notes:
+          $ref: '#/components/schemas/alertNotes'
+        resolution:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/alertResolution'
+        priority:
+          $ref: '#/components/schemas/alertPriority'
+
+    alertClient:
+      type: object
+      properties:
+        id:
           type: string
           format: uuid
-          description: The id of the camera that triggered the alert
-        cameraMountPosition:
-          $ref: '#/components/schemas/cameraMountPosition'
-        cause:
+          description: The UUID of the client for which the alert was raised
+        name:
           type: string
-          example: loitering
-        clientId:
-          type: string
-          format: uuid
-          description: The client who owns the live unit that raised the alert
-        clientName:
-          type: string
-          description: The name of the client who owns the live unit that raised the alert
-        coordinates:
-          $ref: '#/components/schemas/gpsCoordinates'
-        liveUnitId:
+          description: The Name of the client at time of event
+          maxLength: 255
+    alertLiveUnit:
+      type: object
+      properties:
+        id:
           type: string
           format: uuid
-          description: The id of the live unit that raised the alert
-        liveUnitName:
+          description: The UUID of the Live Unit
+        name:
           type: string
-          description: The name of the live unit that raised the alert
-        locationId:
+          description: The Name of the Live Unit at time of the event
+          maxLength: 255
+    alertLocation:
+      type: object
+      properties:
+        id:
           type: string
           format: uuid
-          description: The id of the location that raised the alert
-        locationName:
+          description: The UUID of the event Location
+        name:
           type: string
-          description: The name of the location that raised the alert
-        locationTimezone:
+          description: The Name of the event Location at time of the event
+          maxLength: 255
+        timezone:
           type: string
-          description: The timezone of the location that raised the alert
+          description: The timezone of the location that raised the alert at time of event
+        latitude:
+          type: number
+          format: float
+          minimum: -90.00
+          maximum: 90.00
+          description: GPS Decimal Degrees Latitude of the location at time of event
+          example: 40.123456
+        longitude:
+          type: number
+          format: float
+          minimum: -180.00
+          maximum: 180.00
+          description: GPS Decimal Degrees Longitude of the location at time of event
+          example: -111.789
+    alert:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the alert
+        alertTime:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the alert was triggered
+          example: 2023-01-01T12:00:00.000Z
         media:
           type: array
-          description: A list of media that were captured for the alert
           items:
             $ref: '#/components/schemas/alertMedia'
-        state:
-          type: string
-          description: The current state of the alert
-          enum:
-            - unresolved
-            - resolved
-            - resolveInitiated
-        subject:
-          type: string
-          example: human
-        resolution:
-          $ref: '#/components/schemas/alertResolution'
+        alertType:
+          $ref: '#/components/schemas/alertTypeSummary'
+        camera:
+          $ref: '#/components/schemas/alertCamera'
 
-    alerts:
+    alertCamera:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the camera on the live unit.
+        mountPosition:
+          type: string
+          description: The position of the camera on the live unit.
+        thermal:
+          type: boolean
+          description: Whether the camera is a thermal camera.
+          example: false
+        viewType:
+          type: string
+          description: The type of view the camera has.
+          example: 'panoramic'
+
+    alertTypeSummary:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the alert type
+        name:
+          type: string
+          description: The Name of the alert type
+          maxLength: 255
+          example: 'Animal Detection'
+    alertType:
+      type: object
+      required:
+        - name
+        - description
+        - readOnly
+        - defaultPriority
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the alert type
+        name:
+          type: string
+          description: The Name of the alert type
+          maxLength: 255
+        description:
+          type: string
+          description: The Description of the alert type
+          maxLength: 255
+        archived:
+          type: boolean
+          description: Whether the alert type is archived
+          example: false
+          default: false
+        parentAlert:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/alertTypeSummary'
+        readOnly:
+          type: boolean
+          description: Whether the alert type is read only
+          example: false
+        defaultPriority:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 10
+          description: Default priority used when scoring a new alert event
+          example: 5
+    alertNote:
+      type: object
+      required:
+        - id
+        - message
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the note
+        message:
+          type: string
+          description: The note
+          maxLength: 255
+          example: 'This is a note'
+        user:
+          $ref: '#/components/schemas/alertUser'
+        createdTime:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the note was created
+          example: 2023-01-01T12:00:00.000Z
+        updatedTime:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the note was updated
+          example: 2023-01-01T12:00:00.000Z
+    alertUser:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the user
+        name:
+          type: string
+          description: The name of the user
+          example: greg thomas
+    alertNotes:
+      type: array
+      items:
+        $ref: '#/components/schemas/alertNote'
+
+    alertTypes:
       allOf:
         - $ref: '#/components/schemas/paginated'
         - type: object
@@ -1815,64 +2043,78 @@ components:
               type: array
               maxItems: 100
               items:
-                $ref: '#/components/schemas/alert'
+                $ref: '#/components/schemas/alertType'
 
-    alertTypes:
+    alertEvents:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              maxItems: 100
+              items:
+                $ref: '#/components/schemas/alertEvent'
+    alertEventActiveQuery:
+      type: string
+      enum:
+        - all
+        - historical
+        - active
+      example: all
+      default: active
+    alertResolution:
       type: object
-      description: Object containing enum values
       required:
-        - alertCauses
-        - alertSubjects
-        - resolutionTags
-        - alertStates
+        - id
+        - name
+        - resolvedTime
       properties:
-        alertCauses:
-          type: array
-          description: Valid values that can be returned in the `cause` field of an alert response.
-          items:
-            type: string
-          example:
-            - mastMovement
-            - baseEntry
-            - lowVoltageDisconnect
-            - intrusion
-            - loitering
-            - potentialGunShotDetection
-            - other
-        alertSubjects:
-          type: array
-          description: Valid values that can be returned in the `subject` field of an alert response with the cause `intrusion`.
-          items:
-            type: string
-          example:
-            - human
-            - vehicle
-            - object
-        resolutionTags:
-          type: array
-          description: Valid values that can be sent in the `tags` field of an alert resolution request.
-          items:
-            type: string
-          example:
-            - accident
-            - animal
-            - deterredCrime
-            - employeeVendor
-            - suspiciousActivity
-            - tampering
-            - loitering
-            - theft
-            - technicalIssue
-            - violence
-            - other
-        alertStates:
-          type: array
-          description: Valid values that represent the possible state of an alert.
-          items:
-            type: string
-          example:
-            - unresolved
-            - resolved
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the resolution
+        name:
+          type: string
+          description: short name for the resolution type
+        resolvedTime:
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the alertEvent was resolved
+          example: 2023-01-01T12:00:00.000Z
+        user:
+          $ref: '#/components/schemas/alertUser'
+
+    alertMedia:
+      type: object
+      required:
+        - id
+        - mimeType
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the media
+        mimeType:
+          type: string
+          description: The mime type of the media
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the media was added
+          example: 2023-01-01T12:00:00.000Z
+        camera:
+          $ref: '#/components/schemas/alertCamera'
+
+    alertPriority:
+      type: string
+      description: Current evaluated priority as of the time the entity was queried. Note that this can vary over time.
+      enum:
+        - high
+        - medium
+        - low
+      example: medium
 
     callInfo:
       type: object
