@@ -209,6 +209,8 @@ paths:
         - name: securityAlertId
           in: query
           description: ID of an alert that prompted the talkdown action
+          schema:
+            type: string
       responses:
         '200':
           description: An object containing a WebSocket URL for initiating a talkdown session.
@@ -901,8 +903,6 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - userId
               properties:
                 userId:
                   type: string
