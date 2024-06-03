@@ -1,13 +1,13 @@
 # Webhooks
 
-LVT provides the ability to register webhooks to receive alerts via HTTP `POST` requests. Currently only security alert events are supported with potential for expansion in the
+LVT provides the ability to register webhooks to receive alerts via HTTP `POST` requests. Currently only security alert notifications are supported with potential for expansion in the
 future.
 
 Most of the REST API endpoints are just CRUD for the webhooks resource. The biggest difference is that the url being registered is validated upon creation or update. The validation
 process can be manually executed (without creating any resources) using the `POST /webhooks:test` endpoint.
 
-Once the webhook has been created, if the `enabled` field is `true`, the LVT system will immediately begin sending webhook events to the registered URL as they are received. If a
-registered endpoint is unable to receive events (it does not respond with an HTTP 2XX response code), the LVT system will use an exponential backoff, waiting `attempt ^ 2` seconds
+Once the webhook has been created, if the `enabled` field is `true`, the LVT system will immediately begin sending webhook notifications to the registered URL as they are received. If a
+registered endpoint is unable to receive notifications (it does not respond with an HTTP 2XX response code), the LVT system will use an exponential backoff, waiting `attempt ^ 2` seconds
 before the next attempt. If the registered endpoint does not respond successfully within 10 attempts, the endpoint is automatically disabled. There is currently no notification
 sent upon the disabling of a webhook. A disabled webhook can be enabled again using the `PATCH /webhooks/{webhookId}` endpoint.
 
@@ -15,7 +15,7 @@ Note: All requests in this document are expected to be authenticated as describe
 
 ## Testing a webhook
 
-Testing the webhook is typically the first step done while developing a webhook event receiver. A test event can be triggered using the `POST /webhooks:test` endpoint.
+Testing the webhook is typically the first step done while developing a webhook receiver. A test notification can be triggered using the `POST /webhooks:test` endpoint.
 
 Example request for a validation test:
 
@@ -132,12 +132,12 @@ are `image/jpeg` and `video/mp4`. The IDs of the media for the image and video c
 ## Creating a webhook
 
 After a URL has been tested, the webhook can then be created. The create command is similar to the simple test command but it has an extra `enabled` field. The URL is tested
-regardless of the `enabled` value. The only difference is that the URL will immediately receive event messages if `enabled` is `true`. A webhook can be enabled or disabled at any
+regardless of the `enabled` value. The only difference is that the URL will immediately receive notifications if `enabled` is `true`. A webhook can be enabled or disabled at any
 time using the `PATCH /webhooks/{webhookId}` endpoint.
 
 ## Updating a webhook
 
-The only difference from a typical REST `PATCH` command is that if the `url` is changed, or the `enabled` state is set from `false` to `true`, a test event must be responded to
+The only difference from a typical REST `PATCH` command is that if the `url` is changed, or the `enabled` state is set from `false` to `true`, a test notification must be responded to
 with an HTTP `2XX` status code in order for the update operation to be executed.
 
 ## Error handling and retries
@@ -214,7 +214,7 @@ This should be the first message received in the context of an event. The `data`
 | `liveUnit`     | `liveUnit`             | Details about the live unit that raised the event.                                                            |
 | `location`     | `location`             | Details about the location the live unit was at when the event was raised.                                    |
 | `notes`        | array (`note`)         | A list of notes describing the event.                                                                         |
-| `priority`     | string                 | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`.                         | 
+| `priority`     | integer (1 - 30)       | Priority level of the event between 1 and 30 depending on AlertType, Location, and processing time. A higher value is a higher priority.
 | `resolution`   | `resolution` \| `null` | Details about the resolution of the event. This value is null if the event has not been resolved.             |
 | `assignedUser` | `user` \| `null`       | Details about the user assigned to investigate the event. This value is null if a user has not been assigned. |
 
@@ -222,28 +222,35 @@ Example `data` contents:
 
 ```json
 {
-  "id": "5c883582-e56a-11ee-bd3d-0242ac120002",
-  "eventTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
   "alerts": [],
+  "assignedUser": null,
   "client": {
     "id": "d4f2313e-e56b-11ee-bd3d-0242ac120002",
     "name": "LiveView Technologies"
   },
-  "location": {
-    "id": "dcbcb24a-e56b-11ee-bd3d-0242ac120002",
-    "name": "HQ",
-    "timezone": "America/Denver",
-    "latitude": 40.123456,
-    "longitude": -111.789
-  },
+  "eventTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
+  "id": "5c883582-e56a-11ee-bd3d-0242ac120002",
   "liveUnit": {
     "id": "e0dd0618-e56b-11ee-bd3d-0242ac120002",
     "name": "Houston"
   },
+  "location": {
+    "address": {
+      "city": "Lake Hughview",
+      "county": "Athens",
+      "state": "Ohio",
+      "street": "83163 Kourtney Locks",
+      "zip": "94980"
+    },
+    "id": "dcbcb24a-e56b-11ee-bd3d-0242ac120002",
+    "latitude": 40.123456,
+    "longitude": -111.789,
+    "name": "HQ",
+    "timezone": "America/Denver"
+  },
   "notes": [],
-  "resolution": null,
   "priority": "medium",
-  "assignedUser": null
+  "resolution": null
 }
 ```
 
@@ -253,10 +260,10 @@ _Note_: `alerts` and `notes` are always expected to be empty arrays in an `event
 
 After an event is raised, at least one alert will be raised.
 
-| Field     | Type          | Description                               |
-|-----------|---------------|-------------------------------------------|
-| `alert`   | `alert`       | The alert object.                         |
-| `eventId` | string (UUID) | The ID of the event the alert belongs to. |
+| Field      | Type          | Description                                  |
+| ---------- | ------------- | -------------------------------------------  |
+| `alert`    | `alert`       | The alert object.                            |
+| `eventId`  | string (UUID) | The ID of the event the alert belongs to.    |
 
 The `alert` field can be appended to the `events[eventId].alerts` array.
 
@@ -264,11 +271,8 @@ Example `data` contents:
 
 ```json
 {
-  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
   "alert": {
-    "id": "665a608a-e56a-11ee-bd3d-0242ac120002",
     "alertTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
-    "media": [],
     "alertType": {
       "id": "ee8ffd88-e56b-11ee-bd3d-0242ac120002",
       "name": "Test Alert"
@@ -278,8 +282,11 @@ Example `data` contents:
       "mountPosition": "center",
       "thermal": false,
       "viewType": "panoramic"
-    }
-  }
+    },
+    "id": "665a608a-e56a-11ee-bd3d-0242ac120002",
+    "media": []
+  },
+  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
 }
 ```
 
@@ -426,6 +433,16 @@ Example `data` contents:
 ```
 
 ## Types
+### `address`
+
+| Field     | Type             | Description             |
+| --------- | ---------------- | ----------------------- |
+| `city`    | string \| `null` | The alerts's city.      |
+| `country` | string \| `null` | The alerts's country.   |
+| `state`   | string \| `null` | The alerts's state.     |
+| `street`  | string \| `null` | The alerts's street.    |
+| `zip`     | string \| `null` | The alerts's zip.       |
+
 
 ### `alert`
 
@@ -470,12 +487,13 @@ Example `data` contents:
 ### `location`
 
 | Field       | Type                     | Description                                                                                     |
-|-------------|--------------------------|-------------------------------------------------------------------------------------------------|
+| ----------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
 | `id`        | string (UUID)            | The unique identifier for the location.                                                         |
 | `latitude`  | number (float) \| `null` | The GPS latitude value of the location. Or null if the location does not have GPS coordinates.  |
 | `longitude` | number (float) \| `null` | The GPS longitude value of the location. Or null if the location does not have GPS coordinates. |
 | `name`      | string                   | The name of the location.                                                                       |
 | `timezone`  | string                   | The timezone identifier the location is in. i.e. `America/Denver`.                              |
+| `address`   | `address`                | The address of the location.                                                                    |
 
 ### `media`
 

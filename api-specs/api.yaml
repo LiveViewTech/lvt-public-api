@@ -782,8 +782,8 @@ paths:
 
   /alerts/events:
     get:
-      summary: Get Events
-      description: Get a list of Events. By default it returns all owned Events, but can be filtered using the query parameters.
+      summary: Get events
+      description: Get a list of events. By default it returns all owned events, but can be filtered using the query parameters.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/count'
@@ -815,18 +815,11 @@ paths:
 
   /alerts/events/{id}:
     get:
-      summary: Get a AlertEvent
-      description: Get a AlertEvent with the provided ID.
+      summary: Get an event
+      description: Get an event with the provided ID.
       tags: [Events]
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The UUID of the specific alertEvent to fetch.
-          schema:
-            type: string
-            format: uuid
-          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+        - $ref: '#/components/parameters/alertEventId'
       responses:
         200:
           description: OK
@@ -849,17 +842,10 @@ paths:
   /alerts/events/{id}:addNote:
     post:
       summary: Create a Note
-      description: Create a new Note for the AlertEvent with the provided ID.
+      description: Create a new Note for the event with the provided ID.
       tags: [Events]
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The UUID of the specific alertEvent to fetch.
-          schema:
-            type: string
-            format: uuid
-          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+        - $ref: '#/components/parameters/alertEventId'
       requestBody:
         required: true
         content:
@@ -893,17 +879,10 @@ paths:
   /alerts/events/{id}:resolve:
     post:
       summary: Resolve an event
-      description: Resolve an AlertEvent with the provided ID.
+      description: Resolve an event with the provided ID.
       tags: [Events]
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The UUID of the specific alertEvent to fetch.
-          schema:
-            type: string
-            format: uuid
-          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+        - $ref: '#/components/parameters/alertEventId'
       requestBody:
         required: true
         content:
@@ -916,12 +895,11 @@ paths:
               properties:
                 resolutionId:
                   type: string
+                  format: uuid
                 resolutionTime:
                   type: string
                   format: date-time
                   example: 2023-01-01T12:00:00.000Z
-                note:
-                  type: string
 
       responses:
         200:
@@ -941,17 +919,10 @@ paths:
   /alerts/events/{id}:assignUser:
     post:
       summary: Assign a user to an event
-      description: Assign a user to an AlertEvent with the provided ID.
+      description: Assign a user to an event with the provided ID.
       tags: [Events]
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: The UUID of the specific alertEvent to fetch.
-          schema:
-            type: string
-            format: uuid
-          example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+        - $ref: '#/components/parameters/alertEventId'
       requestBody:
         required: true
         content:
@@ -1381,6 +1352,16 @@ components:
       schema:
         type: string
 
+    alertEventId:
+      name: id
+      in: path
+      required: true
+      description: The UUID of the specific event to fetch.
+      schema:
+        type: string
+        format: uuid
+      example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
+
   requestBodies:
     createWebhook:
       content:
@@ -1452,26 +1433,6 @@ components:
                 enum:
                   - webrtc
                   - rtsp
-
-    resolveAlert:
-      content:
-        application/json:
-          schema:
-            type: object
-            description: Details about an alert resolution
-            required:
-              - tags
-            properties:
-              tags:
-                type: array
-                description: List of tags associated with the resolution
-                minimum: 1
-                items:
-                  type: string
-                  example: theft
-              note:
-                type: string
-                description: Additional notes provided with the resolution. Optional unless `other` is used in the tags.
 
     updateLiveUnitLight:
       content:
@@ -1924,6 +1885,7 @@ components:
         timezone:
           type: string
           description: The timezone of the location that raised the alert at time of event
+          example: 'America/Denver'
         latitude:
           type: number
           format: float
@@ -1945,6 +1907,10 @@ components:
           type: string
           format: uuid
           description: The UUID of the alert
+        eventId:
+          type: string
+          format: uuid
+          description: The UUID of the event
         alertTime:
           type: string
           format: date-time
@@ -2128,7 +2094,7 @@ components:
           description: short name for the resolution type
         resolvedTime:
           format: date-time
-          description: ISO 8601 formatted string. Represents the `timestamp` at which the alertEvent was resolved
+          description: ISO 8601 formatted string. Represents the `timestamp` at which the event was resolved
           example: 2023-01-01T12:00:00.000Z
         user:
           $ref: '#/components/schemas/alertUser'

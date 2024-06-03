@@ -136,12 +136,16 @@ behavior as letting a stream time out).
 ### Streaming webrtc
 [streaming with webrtc](./examples/webrtc/README.md)
 
-## Alerts
+## Security Alerts and Events
+
+### Events
+An event, sometimes referred to as an alertEvent, is a collection of security alerts that are triggered in the same time frame and are grouped together and handled as a single incident.
+
+### Alerts
+A security alert is triggered from the live unit and sends media which occurred at that time. Several alerts can happen under the span of one event.
 
 ### Media
-Media associated with an alert will either be a mp4 video clip or a jpg image. The url associated with alert media is signed when the request is issued and expires after 2 
-hours. If the request is made again, a new signed url will be generated.
-
+Media associated with an alert will either be a mp4 video clip or a jpg image. A signed url of the media can be obtained with the media id and the `GET` `v1/alerts/media/:mediaId/url` endpoint. The signed url will expire after 30 minutes.
 ## Webhooks
 
 The `/webhooks` endpoints of the API are basic CRUD except that the provided URL is tested on creation and updates. There is a `/webhooks:test` endpoint provided to help develop 
