@@ -427,13 +427,16 @@ paths:
 
     put:
       operationId: UpdateCameraPosition
+      deprecated: true
       security:
         - OAuth2: [ account.cameras.manage ]
       tags:
         - Cameras
       summary: Updates the selected camera's PTZF values
       description: >
-        **Phase 1**:
+        **This endpoint is deprecated. Use the PATCH request.**
+
+
         Updates a camera's PTZF
       requestBody:
         description: Updates the absolute position of a camera
@@ -459,6 +462,58 @@ paths:
           $ref: '#/components/responses/406'
         '409':
           $ref: '#/components/responses/409'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+    patch:
+      operationId: UpdateCameraPosition2
+      security:
+        - OAuth2: [ account.cameras.manage ]
+      tags:
+        - Cameras
+      summary: Updates the selected camera's PTZF values
+      description: >
+        Sets a camera's position relative to its current position unless the absolute query parameter is passed.
+      parameters:
+        - in: path
+          name: cameraId
+          description: Camera to operate on.
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: absolute
+          description: Set camera's position with absolute positioning rather than relative.
+          schema:
+            type: boolean
+          example: true
+      requestBody:
+        description: >
+          Updates the position of a camera.
+           
+          If the query parameter `absolute=true`, any negative ptzf values are
+          treated as inverses. For example, `{pan: -1} === {pan: 359}`
+           
+          While the range of `pan/tilt` is expressed from `-360` to `360`, this
+          doesn't necessarily mean the camera has a full 360° of motion.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/cameraPositionPatch'
+      responses:
+        '202':
+          description: Successful. Sending to camera async.
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '406':
+          $ref: '#/components/responses/406'
+        '422':
+          $ref: '#/components/responses/422'
         default:
           $ref: '#/components/responses/defaultError'
 
@@ -1256,6 +1311,13 @@ components:
           schema:
             $ref: '#/components/schemas/error'
 
+    '422':
+      description: 'The operation may not be performed on the specified resource.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
     '500':
       description: 'Is returned when processing encounters an error.'
       content:
@@ -1495,6 +1557,34 @@ components:
               maxItems: 20
               items:
                 $ref: '#/components/schemas/camera'
+
+    cameraPositionPatch:
+      type: object
+      properties:
+        pan:
+          description: Pan value.
+          type: integer
+          format: int32
+          minimum: -360
+          maximum: 360
+        tilt:
+          description: Tilt value.
+          type: integer
+          format: int32
+          minimum: -360
+          maximum: 360
+        zoom:
+          description: Zoom value.
+          type: integer
+          format: int32
+          minimum: -100
+          maximum: 100
+        focus:
+          description: Focus value.
+          type: integer
+          format: int32
+          minimum: -100
+          maximum: 100 
 
     cameraPosition:
       type: object
