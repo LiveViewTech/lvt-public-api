@@ -214,7 +214,7 @@ This should be the first message received in the context of an event. The `data`
 | `liveUnit`     | `liveUnit`             | Details about the live unit that raised the event.                                                            |
 | `location`     | `location`             | Details about the location the live unit was at when the event was raised.                                    |
 | `notes`        | array (`note`)         | A list of notes describing the event.                                                                         |
-| `priority`     | integer (1 - 30)       | Priority level of the event between 1 and 30 depending on AlertType, Location, and processing time. A higher value is a higher priority.
+| `priority`     | string                 | Text prioritization level of the event. Valid values are `high`, `medium`, and `low`.                         | 
 | `resolution`   | `resolution` \| `null` | Details about the resolution of the event. This value is null if the event has not been resolved.             |
 | `assignedUser` | `user` \| `null`       | Details about the user assigned to investigate the event. This value is null if a user has not been assigned. |
 
