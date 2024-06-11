@@ -422,6 +422,8 @@ paths:
           $ref: '#/components/responses/406'
         '409':
           $ref: '#/components/responses/409'
+        '503':
+          $ref: '#/components/responses/503'
         default:
           $ref: '#/components/responses/defaultError'
 
@@ -444,14 +446,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/cameraPosition'
+              $ref: '#/components/schemas/cameraPositionPut'
       responses:
         '200':
           description: A camera instance.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/cameraPosition'
+                $ref: '#/components/schemas/cameraPositionPut'
         '400':
           $ref: '#/components/responses/400'
         '403':
@@ -500,7 +502,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/cameraPositionPatch'
+              $ref: '#/components/schemas/cameraPosition'
       responses:
         '202':
           description: Successful. Sending to camera async.
@@ -1519,35 +1521,35 @@ components:
               items:
                 $ref: '#/components/schemas/camera'
 
-    cameraPositionPatch:
+    cameraPosition:
       type: object
       properties:
         pan:
           description: Pan value.
-          type: integer
-          format: int32
+          type: number
+          format: float
           minimum: -360
           maximum: 360
         tilt:
           description: Tilt value.
-          type: integer
-          format: int32
+          type: number
+          format: float
           minimum: -360
           maximum: 360
         zoom:
           description: Zoom value.
-          type: integer
-          format: int32
+          type: number
+          format: float
           minimum: -100
           maximum: 100
         focus:
           description: Focus value.
-          type: integer
-          format: int32
+          type: number
+          format: float
           minimum: -100
           maximum: 100 
 
-    cameraPosition:
+    cameraPositionPut:
       type: object
       required:
         - pan
