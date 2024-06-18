@@ -407,7 +407,11 @@ paths:
         Returns the selected camera's PTZF values
       responses:
         '200':
-          description: Current position of the specified camera.
+          description: >
+            Current position of the specified camera.
+
+
+            Some camera models do not support focus, these cameras will return null for the focus.
           content:
             application/json:
               schema:
@@ -476,6 +480,9 @@ paths:
       summary: Updates the selected camera's PTZF values
       description: >
         Sets a camera's position relative to its current position unless the absolute query parameter is passed.
+
+
+        Some camera models do not support focus. If the focus is sent, it will be ignored.
       parameters:
         - in: path
           name: cameraId
@@ -1545,6 +1552,7 @@ components:
         focus:
           description: Focus value.
           type: number
+          nullable: true
           format: float
           minimum: -100
           maximum: 100 
