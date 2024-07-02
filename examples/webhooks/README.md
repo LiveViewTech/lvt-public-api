@@ -275,7 +275,9 @@ and `assignedUser` are also always expected to be `null`.
 
 ### `alertRaised`
 
-After an event is raised, if additional alerts are triggered before the event is resolved, they will be sent as `alertRaised` messages.
+After an event is raised, if additional alerts are triggered before the event is resolved and before the event times out, they will be sent as `alertRaised` messages. An event
+will time out after 5 minutes without a resolution or additional alerts. At that point, when a live unit would trigger a new alert, it will raise a new event with the triggered 
+alert instead.
 
 | Field     | Type          | Description                               |
 |-----------|---------------|-------------------------------------------|
