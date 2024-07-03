@@ -222,7 +222,23 @@ Example `data` contents:
 
 ```json
 {
-  "alerts": [],
+  "alerts": [
+    {
+      "alertTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
+      "alertType": {
+        "id": "ee8ffd88-e56b-11ee-bd3d-0242ac120002",
+        "name": "Test Alert"
+      },
+      "camera": {
+        "id": "f4670742-e56b-11ee-bd3d-0242ac120002",
+        "mountPosition": "center",
+        "thermal": false,
+        "viewType": "panoramic"
+      },
+      "id": "665a608a-e56a-11ee-bd3d-0242ac120002",
+      "media": []
+    }
+  ],
   "assignedUser": null,
   "client": {
     "id": "d4f2313e-e56b-11ee-bd3d-0242ac120002",
@@ -254,16 +270,19 @@ Example `data` contents:
 }
 ```
 
-_Note_: `alerts` and `notes` are always expected to be empty arrays in an `eventRaised` message. `resolution` and `assignedUser` are also always expected to be `null`.
+_Note_: `alerts` is expected to have a single alert (the alert that triggered the event). `notes` is always expected to be an empty array in an `eventRaised` message. `resolution` 
+and `assignedUser` are also always expected to be `null`.
 
 ### `alertRaised`
 
-After an event is raised, at least one alert will be raised.
+After an event is raised, if additional alerts are triggered before the event is resolved and before the event times out, they will be sent as `alertRaised` messages. An event
+will time out after 5 minutes without a resolution or additional alerts. At that point, when a live unit would trigger a new alert, it will raise a new event with the triggered 
+alert instead.
 
-| Field      | Type          | Description                                  |
-| ---------- | ------------- | -------------------------------------------  |
-| `alert`    | `alert`       | The alert object.                            |
-| `eventId`  | string (UUID) | The ID of the event the alert belongs to.    |
+| Field     | Type          | Description                               |
+|-----------|---------------|-------------------------------------------|
+| `alert`   | `alert`       | The alert object.                         |
+| `eventId` | string (UUID) | The ID of the event the alert belongs to. |
 
 The `alert` field can be appended to the `events[eventId].alerts` array.
 
@@ -286,7 +305,7 @@ Example `data` contents:
     "id": "665a608a-e56a-11ee-bd3d-0242ac120002",
     "media": []
   },
-  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002",
+  "eventId": "5c883582-e56a-11ee-bd3d-0242ac120002"
 }
 ```
 
@@ -435,13 +454,13 @@ Example `data` contents:
 ## Types
 ### `address`
 
-| Field     | Type             | Description             |
-| --------- | ---------------- | ----------------------- |
-| `city`    | string \| `null` | The alerts's city.      |
-| `country` | string \| `null` | The alerts's country.   |
-| `state`   | string \| `null` | The alerts's state.     |
-| `street`  | string \| `null` | The alerts's street.    |
-| `zip`     | string \| `null` | The alerts's zip.       |
+| Field     | Type             | Description          |
+|-----------|------------------|----------------------|
+| `city`    | string \| `null` | The alert's city.    |
+| `country` | string \| `null` | The alert's country. |
+| `state`   | string \| `null` | The alert's state.   |
+| `street`  | string \| `null` | The alert's street.  |
+| `zip`     | string \| `null` | The alert's zip.     |
 
 
 ### `alert`
@@ -487,7 +506,7 @@ Example `data` contents:
 ### `location`
 
 | Field       | Type                     | Description                                                                                     |
-| ----------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
+|-------------|--------------------------|-------------------------------------------------------------------------------------------------|
 | `id`        | string (UUID)            | The unique identifier for the location.                                                         |
 | `latitude`  | number (float) \| `null` | The GPS latitude value of the location. Or null if the location does not have GPS coordinates.  |
 | `longitude` | number (float) \| `null` | The GPS longitude value of the location. Or null if the location does not have GPS coordinates. |
