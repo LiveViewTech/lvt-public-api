@@ -802,6 +802,20 @@ paths:
           description: Filter by archived status
           schema:
             $ref: '#/components/schemas/alertEventActiveQuery'
+        - name: beginTime
+          in: query
+          description: ISO 8601 formatted string. Filter events which have a time equal or greater
+          schema:
+            type: string
+            format: date-time
+            example: 2023-01-01T12:00:00.000Z
+        - name: endTime
+          in: query
+          description: ISO 8601 formatted string. Filter events which have a time equal or less
+          schema:
+            type: string
+            format: date-time
+            example: 2023-01-01T12:00:00.000Z
       responses:
         200:
           description: OK
