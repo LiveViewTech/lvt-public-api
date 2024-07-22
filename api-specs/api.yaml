@@ -2121,6 +2121,8 @@ components:
           description: ISO 8601 formatted string. Represents the `timestamp` at which the event was resolved
           example: 2023-01-01T12:00:00.000Z
         user:
+          nullable: true
+          description: User who resolved the event. Null if it was auto-resolved by LVT system
           $ref: '#/components/schemas/alertUser'
 
     alertMedia:

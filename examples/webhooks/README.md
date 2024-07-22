@@ -535,12 +535,12 @@ Example `data` contents:
 
 ### `resolution`
 
-| Field          | Type              | Description                                   |
-|----------------|-------------------|-----------------------------------------------|
-| `id`           | string (UUID)     | The unique identifier for the resolution.     |
-| `name`         | string            | Short name for the resolution type.           |
-| `resolvedTime` | string (ISO-8601) | The timestamp of when the event was resolved. |
-| `user`         | `user`            | The user who resolved the event.              |
+| Field          | Type              | Description                                                                              |
+| -------------- | ----------------- | ---------------------------------------------------------------------------------------- |
+| `id`           | string (UUID)     | The unique identifier for the resolution.                                                |
+| `name`         | string            | Short name for the resolution type.                                                      |
+| `resolvedTime` | string (ISO-8601) | The timestamp of when the event was resolved.                                            |
+| `user`         | `user` \| null    | The user who resolved the event. This is null if it was auto-resolved by the LVT system. |
 
 ### `user`
 
