@@ -1469,6 +1469,41 @@ components:
                 $ref: '#/components/schemas/lightState'
 
   schemas:
+    address:
+      type: object
+      required:
+        - city
+        - county
+        - country
+        - state
+        - street
+        - zip
+      properties:
+        city:
+          type: string
+          example: American Fork
+          nullable: true
+        county:
+          type: string
+          example: Utah
+          nullable: true
+        country:
+          type: string
+          example: USA
+          nullable: true
+        state:
+          type: string
+          example: Utah
+          nullable: true
+        street:
+          type: string
+          example: 802 E 1050 S
+          nullable: true
+        zip:
+          type: string
+          example: 84003
+          nullable: true
+
     camera:
       type: object
       required:
@@ -1671,6 +1706,7 @@ components:
         - id
         - gpsLocation
         - name
+        - address
       properties:
         id:
           type: string
@@ -1682,6 +1718,8 @@ components:
           type: string
           description: 'User defined name of a location'
           example: 'Store #326 North Parking Lot'
+        address:
+          $ref: '#/components/schemas/address'
 
     locations:
       allOf:
