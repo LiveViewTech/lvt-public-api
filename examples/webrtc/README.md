@@ -278,7 +278,7 @@ axiosClient.post(`https://api.lvt.com/v1/cameras/${cameraId}/streams`, { protoco
 ```
 
 ### firewall
-Your network firewall will need to allow communication as indicated: https://support.liveviewtech.com/article/44-configuring-firewall-whitelisting
+Your network firewall will need to allow communication as indicated: https://docs.lvt.com/r/configuring-firewall-whitelisting/configuring-firewall-whitelisting
 
 ## Additional information
 More details on establishing WebRTC connections:
