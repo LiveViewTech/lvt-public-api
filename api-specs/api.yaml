@@ -1463,7 +1463,7 @@ components:
           schema:
             type: object
             required:
-              - status
+              - state
             properties:
               state:
                 $ref: '#/components/schemas/lightState'
