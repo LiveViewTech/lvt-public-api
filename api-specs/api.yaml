@@ -816,6 +816,20 @@ paths:
             type: string
             format: date-time
             example: 2023-01-01T12:00:00.000Z
+        - name: filterKind
+          in: query
+          description: (optional) The kind of expression being passed in the 'filter' parameter -- these MUST appear together!
+          schema:
+            type: string
+            enum:
+              -liveunit_id
+        - name: filter
+          in: query
+          description: |-
+            (optional) A value to filter alerts by; if specified, the kind of filter must be specified in the 'filterKind' parameter
+          schema:
+            type: string
+            example: 12345678-1234-1234-1234-12345678abcd
       responses:
         200:
           description: OK
