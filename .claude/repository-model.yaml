@@ -1,0 +1,249 @@
+version: 1
+facts:
+  languages:
+    - id: lang-yaml
+      value: YAML
+      evidence:
+        - api-specs/api.yaml#1-5
+    - id: lang-markdown
+      value: Markdown
+      evidence:
+        - README.md
+        - examples/webrtc/README.md
+        - examples/webhooks/README.md
+  frameworks:
+    - id: fw-openapi
+      value: OpenAPI 3.0.3
+      evidence:
+        - api-specs/api.yaml#1-5
+  entry_points:
+    - id: entry-readme
+      value: README.md
+      evidence:
+        - README.md
+    - id: entry-openapi
+      value: api-specs/api.yaml
+      evidence:
+        - api-specs/api.yaml#1-8
+        - README.md
+    - id: entry-webrtc-guide
+      value: examples/webrtc/README.md
+      evidence:
+        - examples/webrtc/README.md
+        - README.md
+    - id: entry-webhooks-guide
+      value: examples/webhooks/README.md
+      evidence:
+        - examples/webhooks/README.md
+        - README.md
+  components:
+    - id: comp-api-specs
+      name: api-specs
+      path: api-specs
+      evidence:
+        - api-specs/api.yaml
+        - README.md
+    - id: comp-examples-webrtc
+      name: webrtc examples
+      path: examples/webrtc
+      evidence:
+        - examples/webrtc/README.md
+        - README.md
+    - id: comp-examples-webhooks
+      name: webhooks examples
+      path: examples/webhooks
+      evidence:
+        - examples/webhooks/README.md
+        - README.md
+  external_services:
+    - id: svc-lvt-public-api
+      value: https://api.lvt.com/v1
+      evidence:
+        - api-specs/api.yaml#6-8
+        - README.md
+    - id: svc-oauth-token
+      value: https://api.lvt.com/oauth2/v1/token
+      evidence:
+        - api-specs/api.yaml#1255-1264
+        - README.md
+    - id: svc-camera-relay
+      value: Camera relay WebSocket signal server (signalUrl from start-stream response)
+      evidence:
+        - examples/webrtc/README.md
+        - api-specs/api.yaml#567-608
+    - id: svc-talkdown
+      value: wss://talkdown.api.lvt.com
+      evidence:
+        - api-specs/api.yaml#2329-2346
+analysis:
+  purpose:
+    value: "Publishes the LVT Public REST API contract and partner integration guides so external clients can authenticate, stream cameras, manage locations/live units, consume security alerts via webhooks, and use talkdown."
+    confidence: high
+    evidence_refs:
+      - entry-readme
+      - entry-openapi
+      - comp-api-specs
+      - comp-examples-webrtc
+      - comp-examples-webhooks
+  architecture:
+    value: "Documentation-only repository: OpenAPI 3.0.3 in api-specs/api.yaml is the machine-readable contract for https://api.lvt.com/v1; README.md covers OAuth2 client-credentials auth and RTSP streaming; examples/webrtc and examples/webhooks hold protocol-level partner guides. No application runtime, package manifest, or CI lives in this repo."
+    confidence: high
+    evidence_refs:
+      - fw-openapi
+      - entry-readme
+      - entry-openapi
+      - comp-api-specs
+      - comp-examples-webrtc
+      - comp-examples-webhooks
+      - svc-lvt-public-api
+      - svc-oauth-token
+  patterns:
+    - id: pat-oauth2-client-credentials
+      value: "API auth uses OAuth2 client credentials against https://api.lvt.com/oauth2/v1/token with scopes account.liveUnits.manage, account.cameras.manage, and account.locations.manage; README documents Base64 client_id:client_secret as Basic auth."
+      confidence: high
+      evidence_refs:
+        - svc-oauth-token
+        - entry-readme
+        - entry-openapi
+    - id: pat-colon-rpc-actions
+      value: "Several mutating operations use colon-suffixed RPC-style paths (e.g. /streams/{streamId}:checkIn, /webhooks:test, /liveUnits/{id}:call) rather than nested REST verbs."
+      confidence: high
+      evidence_refs:
+        - entry-openapi
+        - entry-readme
+    - id: pat-stream-keepalive
+      value: "Camera streams require periodic POST :checkIn using refreshInterval; missed check-ins eventually time out the stream; DELETE /streams/{streamId} checks out."
+      confidence: high
+      evidence_refs:
+        - entry-readme
+        - entry-webrtc-guide
+        - entry-openapi
+    - id: pat-webhook-hmac-verify
+      value: "Outbound webhook POSTs include X-LVT-HMAC-SHA256 and X-LVT-PUBKEY-URL; receivers fetch PEM public keys from /publicKeys/{id} and verify SHA256 signatures over the body."
+      confidence: high
+      evidence_refs:
+        - entry-webhooks-guide
+        - entry-openapi
+    - id: pat-webhook-backoff-disable
+      value: "Failed webhook deliveries retry with attempt^2 second backoff for up to 10 attempts, then auto-disable the webhook with no disable notification."
+      confidence: high
+      evidence_refs:
+        - entry-webhooks-guide
+  component_notes:
+    - ref: comp-api-specs
+      purpose: "Canonical OpenAPI 3.0.3 (version 0.5.0, Beta) defining paths for liveUnits, cameras, streams, locations, alerts/events, media URLs, webhooks, publicKeys, and talkdown."
+      confidence: high
+    - ref: comp-examples-webrtc
+      purpose: "Step-by-step WebRTC client guide: start stream, WebSocket signaling to camera relay, SDP/ICE negotiation, track handling, and firewall notes. Sample TypeScript only; not a runnable package."
+      confidence: high
+    - ref: comp-examples-webhooks
+      purpose: "Partner guide for registering/testing securityAlerts webhooks, HMAC verification, retry semantics, and per-action payload shapes (eventRaised, alertRaised, mediaAvailable, etc.)."
+      confidence: high
+  service_notes:
+    - ref: svc-lvt-public-api
+      purpose: "Production beta Public REST API base URL used by all documented partner calls."
+      integration: "Clients send Bearer access tokens from the OAuth token endpoint to paths under /v1."
+      confidence: high
+    - ref: svc-oauth-token
+      purpose: "OAuth2 client-credentials token endpoint returning Bearer access tokens (expires_in 3600 in README example)."
+      integration: "README identifies the authorization server as LVT's Okta instance; OpenAPI lists tokenUrl https://api.lvt.com/oauth2/v1/token with three account.*.manage scopes."
+      confidence: high
+    - ref: svc-camera-relay
+      purpose: "Per-stream WebSocket signal server that negotiates WebRTC with the client after POST /cameras/{cameraId}/streams with protocol webrtc."
+      integration: "Clients connect to signalUrl from the start-stream response and exchange getOffer/sendResponse messages with case-sensitive streamInfo."
+      confidence: high
+    - ref: svc-talkdown
+      purpose: "WebSocket endpoint for Partner Talkdown audio sessions returned from live-unit call flows."
+      integration: "Clients open wssUrl, send mono Mulaw 8kHz audio byte arrays, and close the socket to end the session."
+      confidence: medium
+  dangerous_areas:
+    - id: danger-media-path-mismatch
+      value: "Signed media URL path differs across docs"
+      reason: "Root README and OpenAPI use GET /alerts/media/{mediaId}/url; examples/webhooks/README.md documents GET /media/{mediaId}/url (and mentions GET /media/{mediaId}). Following the webhook guide literally will miss the alerts prefix."
+      confidence: high
+      evidence_refs:
+        - entry-readme
+        - entry-openapi
+        - entry-webhooks-guide
+    - id: danger-stream-timeout
+      value: "Streams time out without checkIn"
+      reason: "Started streams auto-timeout unless clients POST :checkIn on refreshInterval; colon delimiter must be literal :checkIn. Explicit DELETE checkout is recommended."
+      confidence: high
+      evidence_refs:
+        - entry-readme
+        - entry-webrtc-guide
+    - id: danger-webhook-auto-disable
+      value: "Webhooks auto-disable after 10 failed deliveries"
+      reason: "Non-2XX responses trigger exponential backoff then disable with no outbound notification; out-of-order retries can disable a webhook even after later messages succeed."
+      confidence: high
+      evidence_refs:
+        - entry-webhooks-guide
+    - id: danger-streaminfo-case
+      value: "WebRTC streamInfo property casing is significant"
+      reason: "applicationName, streamName, and sessionId must keep exact casing when encoding/decoding for the camera relay."
+      confidence: high
+      evidence_refs:
+        - entry-webrtc-guide
+    - id: danger-webrtc-camera-path-typo
+      value: "WebRTC guide mixes /camera/ and /cameras/ path forms"
+      reason: "examples/webrtc/README.md sometimes writes POST /camera/{cameraId}/streams while the OpenAPI and working curl samples use /cameras/{cameraId}/streams. Prefer the OpenAPI path."
+      confidence: high
+      evidence_refs:
+        - entry-webrtc-guide
+        - entry-openapi
+  questions:
+    - id: q-liveunit-definition
+      question: "What is the precise domain definition of a LiveUnit versus location/camera in LVT product terms? Spec tags describe operations but not the business entity."
+      area: domain
+      priority: medium
+      evidence_refs:
+        - entry-openapi
+        - entry-readme
+    - id: q-partner-talkdown
+      question: "What does Partner Talkdown mean operationally (who is the partner, audio path ownership, required scopes)? Call/talkdown paths lack OAuth scope entries that other liveUnit routes declare."
+      area: talkdown
+      priority: medium
+      evidence_refs:
+        - entry-openapi
+        - svc-talkdown
+    - id: q-phase-rollout-status
+      question: "OpenAPI descriptions mark many endpoints as Phase 1/2/3 while info.description says Public REST API - Beta. Which phases are generally available to partners today?"
+      area: api-maturity
+      priority: medium
+      evidence_refs:
+        - entry-openapi
+    - id: q-events-media-tags-missing
+      question: "Paths tag Events, Media, and Streams but the top-level tags list only Cameras, LiveUnits, Locations, Webhooks, PublicKeys, Talkdown. Is the tags list incomplete or are those path tags accidental?"
+      area: openapi
+      priority: low
+      evidence_refs:
+        - entry-openapi
+    - id: q-implementation-repo
+      question: "This repository contains only the public contract and guides. Where is the implementing service source of truth, and should agents editing behavior work there instead?"
+      area: ownership
+      priority: high
+      evidence_refs:
+        - entry-readme
+        - entry-openapi
+    - id: q-okta-vs-token-url
+      question: "README calls the auth server LVT's Okta instance while OpenAPI only publishes tokenUrl https://api.lvt.com/oauth2/v1/token. Is Okta an implementation detail partners should ignore, or should the spec document Okta explicitly?"
+      area: auth
+      priority: low
+      evidence_refs:
+        - entry-readme
+        - svc-oauth-token
+    - id: q-media-path-canonical
+      question: "Which media URL path is canonical for partners — /alerts/media/{mediaId}/url (OpenAPI/README) or /media/{mediaId}/url (webhooks guide)?"
+      area: webhooks-media
+      priority: high
+      evidence_refs:
+        - entry-readme
+        - entry-openapi
+        - entry-webhooks-guide
+    - id: q-missing-operation-scopes
+      question: "Several operations (talkdown :call, sounds, lights, alerts/events, webhooks, publicKeys) declare no per-operation OAuth2 scopes and rely on the empty global security requirement. Which scopes are actually required in production?"
+      area: auth
+      priority: medium
+      evidence_refs:
+        - entry-openapi
+        - svc-oauth-token
