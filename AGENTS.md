@@ -15,9 +15,7 @@ Public contract and partner guides for the LVT Public REST API — authenticate,
 
 ## Commands
 
-No package manifest, Makefile, or CI in this repo. There is nothing to install, build, or test here.
-
-Validate locally only if you add tooling; partners consume the published YAML and guides as-is.
+No package manifest, Makefile, or CI. Nothing to install, build, or test in this repo.
 
 ## Conventions
 
