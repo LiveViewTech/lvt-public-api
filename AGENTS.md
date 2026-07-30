@@ -8,10 +8,6 @@ Public contract and partner guides for the LVT Public REST API — authenticate,
 - Stack: OpenAPI 3.0.3 (`api-specs/api.yaml` v0.5.0 Beta), Markdown guides
 - Base URL: `https://api.lvt.com/v1`
 - Auth: OAuth2 client credentials → `https://api.lvt.com/oauth2/v1/token`
-- Subdocs:
-  - `api-specs/AGENTS.md`
-  - `examples/webrtc/AGENTS.md`
-  - `examples/webhooks/AGENTS.md`
 
 ## Commands
 
@@ -23,12 +19,13 @@ No package manifest, Makefile, or CI. Nothing to install, build, or test in this
 - Prefer OpenAPI paths over prose when README/example text conflicts (see Gotchas).
 - Do not invent runtime/service behavior here — this repo does not contain the API implementation.
 - Keep example snippets illustrative; they are not runnable packages.
+- Do not invent OpenAPI tags — top-level `tags` omit Events/Media/Streams even though some operations use those names.
 
 ## Directory Map
 
-- `api-specs/` → see `api-specs/AGENTS.md`
-- `examples/webrtc/` → see `examples/webrtc/AGENTS.md`
-- `examples/webhooks/` → see `examples/webhooks/AGENTS.md`
+- `api-specs/` → OpenAPI contract (`api.yaml`)
+- `examples/webrtc/` → WebRTC signaling guide (`README.md`)
+- `examples/webhooks/` → webhook HMAC/retry guide (`README.md`)
 - `README.md` → auth + RTSP streaming user guide
 
 ## Architecture
@@ -42,6 +39,8 @@ Partners obtain a Bearer token (README OAuth flow / OpenAPI `OAuth2` clientCrede
 - **Webhook auto-disable:** non-2XX → `attempt^2` backoff up to 10 tries, then disable with no notify (`examples/webhooks/README.md`).
 - **WebRTC path typo:** guide sometimes says `/camera/...`; OpenAPI is `/cameras/...`.
 - **streamInfo casing:** `applicationName`, `streamName`, `sessionId` are case-sensitive (`examples/webrtc/README.md`).
+- **Per-op security often omitted:** many ops (alerts, webhooks, talkdown `:call`, lights/sounds) fall through to global `OAuth2: []` rather than listing scopes.
+- **Prefer UDP ICE:** WebRTC guide notes TCP ICE candidates add retransmission delay; prefer UDP (`examples/webrtc/README.md`).
 
 ## Key Files
 
