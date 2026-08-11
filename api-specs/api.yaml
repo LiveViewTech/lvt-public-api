@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: LVT API
-  description: Public REST API - Beta
-  version: 0.5.0
+  description: Public REST API
+  version: 1.0.1
 servers:
   - url: 'https://api.lvt.com/v1'
     description: Production beta version
