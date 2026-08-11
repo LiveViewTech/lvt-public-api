@@ -1509,10 +1509,12 @@ components:
       required:
         - id
         - liveUnitId
+        - placement 
         - mountPosition
         - thermal
         - name
         - viewType
+        - streamSlot
         - capabilities
       properties:
         id:
@@ -1523,6 +1525,8 @@ components:
           type: string
           format: uuid
           description: The live unit hosting this camera
+        placement:
+          $ref: '#/components/schemas/placement'
         serialNumber:
           type: string
           description: Serial number of the camera
@@ -1554,6 +1558,15 @@ components:
             - single
             - panoramic
             - quadView
+            - multi 
+        streamSlot:
+          type: integer
+          description: The slot of the stream on any given camera. For all single stream cameras, this will be 1. Donut cameras have 4 stream slots.
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
         capabilities:
           type: object
           description: Capabilities which the camera supports
@@ -1576,6 +1589,39 @@ components:
               maxItems: 20
               items:
                 $ref: '#/components/schemas/camera'
+
+    placement:
+      type: object
+      required:
+        - position
+        - mountUnit
+      description: Describes form and position of camera mount 
+      properties:
+        position:
+          $ref: '#/components/schemas/cameraMountPosition'
+        mountUnit:
+          $ref: '#/components/schemas/mountUnit'
+
+    mountUnit:
+      type: object
+      required:
+        - id
+        - type
+        - gpsLocation
+      description: Describes form of camera mount
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The id of the mount unit
+        type:
+          type: string
+          description: Type of mount the camera is on
+          enum:
+            - liveUnit
+            - liveUnitSurroundHead
+        gpsLocation:
+          $ref: '#/components/schemas/gpsCoordinates'
 
     cameraPosition:
       type: object
