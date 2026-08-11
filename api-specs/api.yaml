@@ -1561,7 +1561,7 @@ components:
             - multi 
         streamSlot:
           type: integer
-          description: The slot of the stream on any given camera. For all single stream cameras, this will be 1. Donut cameras have 4 stream slots.
+          description: The slot of the stream on any given camera. For all single stream cameras, this will be 1. Multi-Sensor Panoramic cameras have 4 stream slots.
           enum:
             - 1
             - 2
