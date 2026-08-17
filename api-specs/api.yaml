@@ -1562,11 +1562,8 @@ components:
         streamSlot:
           type: integer
           description: The slot of the stream on any given camera. For all single stream cameras, this will be 1. Multi-Sensor Panoramic cameras have 4 stream slots.
-          enum:
-            - 1
-            - 2
-            - 3
-            - 4
+          minimum: 1
+          maximum: 4
         capabilities:
           type: object
           description: Capabilities which the camera supports
@@ -1612,7 +1609,6 @@ components:
       properties:
         id:
           type: string
-          format: uuid
           description: The id of the mount unit
         type:
           type: string
