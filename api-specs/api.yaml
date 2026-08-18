@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: LVT API
-  description: Public REST API - Beta
-  version: 0.5.0
+  description: Public REST API
+  version: 1.0.1
 servers:
   - url: 'https://api.lvt.com/v1'
     description: Production beta version
@@ -1509,10 +1509,12 @@ components:
       required:
         - id
         - liveUnitId
+        - placement 
         - mountPosition
         - thermal
         - name
         - viewType
+        - streamSlot
         - capabilities
       properties:
         id:
@@ -1523,6 +1525,8 @@ components:
           type: string
           format: uuid
           description: The live unit hosting this camera
+        placement:
+          $ref: '#/components/schemas/placement'
         serialNumber:
           type: string
           description: Serial number of the camera
@@ -1554,6 +1558,12 @@ components:
             - single
             - panoramic
             - quadView
+            - multi 
+        streamSlot:
+          type: integer
+          description: The slot of the stream on any given camera. For all single stream cameras, this will be 1. Multi-Sensor Panoramic cameras have 4 stream slots.
+          minimum: 1
+          maximum: 4
         capabilities:
           type: object
           description: Capabilities which the camera supports
@@ -1576,6 +1586,38 @@ components:
               maxItems: 20
               items:
                 $ref: '#/components/schemas/camera'
+
+    placement:
+      type: object
+      required:
+        - position
+        - mountUnit
+      description: Describes form and position of camera mount 
+      properties:
+        position:
+          $ref: '#/components/schemas/cameraMountPosition'
+        mountUnit:
+          $ref: '#/components/schemas/mountUnit'
+
+    mountUnit:
+      type: object
+      required:
+        - id
+        - type
+        - gpsLocation
+      description: Describes form of camera mount
+      properties:
+        id:
+          type: string
+          description: The id of the mount unit
+        type:
+          type: string
+          description: Type of mount the camera is on
+          enum:
+            - liveUnit
+            - liveUnitSurroundHead
+        gpsLocation:
+          $ref: '#/components/schemas/gpsCoordinates'
 
     cameraPosition:
       type: object
