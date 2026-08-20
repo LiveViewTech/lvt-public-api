@@ -915,7 +915,7 @@ paths:
             format: date-time
             example: 2023-01-01T12:00:00.000Z
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
@@ -942,7 +942,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/alertEventId'
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
@@ -983,7 +983,7 @@ paths:
                 message:
                   type: string
       responses:
-        200:
+        '200':
           $ref: '#/components/responses/createdObject'
         '400':
           $ref: '#/components/responses/400'
@@ -1023,7 +1023,7 @@ paths:
                   example: 2023-01-01T12:00:00.000Z
 
       responses:
-        200:
+        '200':
           $ref: '#/components/responses/updatedObject'
         '400':
           $ref: '#/components/responses/400'
@@ -1057,7 +1057,7 @@ paths:
                   description: The UUID of the specific user to assign. Null to unassign a user.
 
       responses:
-        200:
+        '200':
           $ref: '#/components/responses/updatedObject'
         '400':
           $ref: '#/components/responses/400'
@@ -1087,7 +1087,7 @@ paths:
             format: uuid
           example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
@@ -1123,7 +1123,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/createWebhook'
       responses:
-        201:
+        '201':
           description: Created
           content:
             application/json:
@@ -1161,7 +1161,7 @@ paths:
             type: string
           example: alerts,other
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
@@ -1195,7 +1195,7 @@ paths:
             format: uuid
           example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
@@ -1230,7 +1230,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/updateWebhook'
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
@@ -1262,7 +1262,7 @@ paths:
             format: uuid
           example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
       responses:
-        204:
+        '204':
           description: Deleted
         '400':
           $ref: '#/components/responses/400'
@@ -1298,7 +1298,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/updateWebhook'
       responses:
-        204:
+        '204':
           description: OK
         '400':
           $ref: '#/components/responses/400'
@@ -1328,7 +1328,7 @@ paths:
             format: uuid
           example: a0b0e212-8d3b-4e48-90a5-e32b67b3388d
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/x-pem-file:
@@ -1567,6 +1567,7 @@ components:
                 $ref: '#/components/schemas/lightState'
 
     updateLiveUnitArmState:
+      required: true
       content:
         application/json:
           schema:
