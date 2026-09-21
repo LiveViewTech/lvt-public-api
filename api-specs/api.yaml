@@ -1707,7 +1707,7 @@ components:
           properties:
             items:
               type: array
-              maxItems: 20
+              maxItems: 100
               items:
                 $ref: '#/components/schemas/camera'
 
@@ -1841,7 +1841,7 @@ components:
           properties:
             items:
               type: array
-              maxItems: 20
+              maxItems: 100
               items:
                 $ref: '#/components/schemas/liveUnit'
 
@@ -1896,7 +1896,7 @@ components:
           properties:
             items:
               type: array
-              maxItems: 20
+              maxItems: 100
               items:
                 $ref: '#/components/schemas/location'
 
