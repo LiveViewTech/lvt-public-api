@@ -384,14 +384,14 @@ paths:
                     $ref: '#/components/schemas/armState'
         '400':
           $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
         default:
           $ref: '#/components/responses/defaultError'
     put:
@@ -412,18 +412,14 @@ paths:
           description: Success
         '400':
           $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
-        '409':
-          $ref: '#/components/responses/409'
-        '422':
-          $ref: '#/components/responses/422'
         '500':
           $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
         default:
           $ref: '#/components/responses/defaultError'
     delete:
@@ -440,14 +436,14 @@ paths:
           description: Success
         '400':
           $ref: '#/components/responses/400'
-        '401':
-          $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
         default:
           $ref: '#/components/responses/defaultError'
 
@@ -1417,6 +1413,9 @@ components:
           schema:
             $ref: '#/components/schemas/error'
 
+    '501':
+      description: 'Is returned when the server does not support the requested operation or has not been activated for the requesting account.'
+
     '503':
       description: 'Is returned when processing is unable to access a needed resource.'
       content:
@@ -1573,7 +1572,6 @@ components:
           schema:
             type: object
             required:
-              - durationInMinutes
               - justification
               - state
             properties:
@@ -1584,10 +1582,13 @@ components:
                 minimum: 15
                 maximum: 180
                 example: 60
+                default: 15
               justification:
                 type: string
                 description: The reason the arm state is being overridden. Retained for auditing.
                 example: Scheduled maintenance on site
+                minimum: 1
+                maximum: 1000
               state:
                 $ref: '#/components/schemas/armStateOverride'
 
