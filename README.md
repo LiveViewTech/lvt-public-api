@@ -136,6 +136,11 @@ behavior as letting a stream time out).
 ### Streaming webrtc
 [streaming with webrtc](./examples/webrtc/README.md)
 
+## Using the Speaker
+LVT Live Units are equipped with a speaker that can be used to send one-way audio in real-time. The LVT-API provides an endpoint to transmit this audio.
+
+[See here](./examples/talkdown-api-client-usage.md) for details.
+
 ## Security Alerts and Events
 
 ### Events
