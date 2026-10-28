@@ -268,6 +268,8 @@ paths:
   /liveUnits/{liveUnitId}/lights:
     get:
       operationId: GetLiveUnitLights
+      security:
+        - OAuth2: [ account.liveUnits.manage ]
       tags:
         - LiveUnits
       summary: List of lights on the live unit
@@ -302,6 +304,8 @@ paths:
   /liveUnits/{liveUnitId}/lights/{lightId}:toggle:
     post:
       operationId: ToggleLiveUnitLight
+      security:
+        - OAuth2: [ account.liveUnits.manage ]
       tags:
         - LiveUnits
       summary: Toggle the status of a light on a live unit
@@ -617,6 +621,82 @@ paths:
           $ref: '#/components/responses/406'
         '422':
           $ref: '#/components/responses/422'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /cameras/{cameraId}/presets:
+    parameters:
+      - name: cameraId
+        in: path
+        description: Camera to operate on.
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: GetCameraPresets
+      security:
+        - OAuth2: [ account.cameras.manage ]
+      tags:
+        - Cameras
+      summary: List of presets stored for the camera
+      description: >
+        **Phase 3**:
+        List of PTZ presets stored for the camera
+      parameters:
+        - $ref: '#/components/parameters/count'
+        - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: A list of presets.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/cameraPresets'
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        default:
+          $ref: '#/components/responses/defaultError'
+
+  /cameras/{cameraId}/presets/{presetId}:moveTo:
+    parameters:
+      - name: cameraId
+        in: path
+        description: Camera to operate on.
+        required: true
+        schema:
+          type: string
+      - name: presetId
+        in: path
+        description: The preset ID
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: MoveCameraToPreset
+      security:
+        - OAuth2: [ account.cameras.manage ]
+      tags:
+        - Cameras
+      summary: Moves the camera to a stored preset
+      description: >
+        **Phase 3**
+        Moves the camera to the stored position of the preset, like PATCH position with absolute=true.
+        Asynchronous: 202 means the move was accepted.
+      responses:
+        '202':
+          description: Successful. Sending to camera async.
+        '400':
+          $ref: '#/components/responses/400'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
         default:
           $ref: '#/components/responses/defaultError'
 
@@ -1771,6 +1851,47 @@ components:
           format: float
           minimum: -100
           maximum: 100
+
+    cameraPreset:
+      type: object
+      required:
+        - id
+        - cameraId
+        - name
+        - position
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The ID of the preset.
+        cameraId:
+          type: string
+          format: uuid
+          description: The ID of the camera the preset belongs to.
+        name:
+          type: string
+          description: The name of the preset.
+        position:
+          description: >
+            The stored position, with the same values as the camera position.
+            Some camera models do not support focus, these presets have a null focus.
+          allOf:
+            - $ref: '#/components/schemas/cameraPosition'
+          required:
+            - pan
+            - tilt
+            - zoom
+
+    cameraPresets:
+      allOf:
+        - $ref: '#/components/schemas/paginated'
+        - type: object
+          required: [ items ]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/cameraPreset'
 
     cameraPositionPut:
       type: object
