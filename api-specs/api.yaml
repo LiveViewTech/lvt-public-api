@@ -996,7 +996,9 @@ paths:
   /alerts/events/{id}:resolve:
     post:
       summary: Resolve an event
-      description: Resolve an event with the provided ID.
+      description: >-
+        Resolve an event with the provided ID and record how it was closed. An event can be resolved
+        once. Repeating a call with the same userId, resolutionId and resolutionTime is safe.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
@@ -1007,20 +1009,56 @@ paths:
             schema:
               type: object
               required:
+                - userId
                 - resolutionId
                 - resolutionTime
               properties:
+                userId:
+                  type: string
+                  format: uuid
+                  description: The LVT user recorded as the resolver. LVT provides this ID.
                 resolutionId:
                   type: string
                   format: uuid
+                  description: >-
+                    How the event was resolved. LVT provides these IDs. System and archived
+                    resolutions are rejected with a 400.
                 resolutionTime:
                   type: string
                   format: date-time
                   example: 2023-01-01T12:00:00.000Z
+                incidentCategoryId:
+                  type: string
+                  format: uuid
+                  nullable: true
+                  description: >-
+                    What caused the event. LVT provides these IDs. System and archived incident
+                    categories are rejected with a 400.
+                note:
+                  type: string
+                  nullable: true
+                  description: Added to the event's notes.
+                closure:
+                  $ref: '#/components/schemas/EventClosure'
 
       responses:
         '200':
-          $ref: '#/components/responses/updatedObject'
+          description: >-
+            The event was resolved. Repeating the same userId, resolutionId and resolutionTime
+            returns 200 and stores anything an earlier attempt did not.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventId:
+                    type: string
+                    format: uuid
+                  locationId:
+                    type: string
+                    format: uuid
+                  resolution:
+                    $ref: '#/components/schemas/EventResolution'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1029,6 +1067,19 @@ paths:
           $ref: '#/components/responses/403'
         '404':
           $ref: '#/components/responses/404'
+        '409':
+          description: >-
+            The event is already resolved. Nothing was stored, including closure fields and the
+            note. Do not retry. The body holds the resolution already on the event.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/error'
+                  - type: object
+                    properties:
+                      resolution:
+                        $ref: '#/components/schemas/EventResolution'
         '500':
           $ref: '#/components/responses/500'
         default:
@@ -1593,6 +1644,90 @@ components:
                 $ref: '#/components/schemas/armStateOverride'
 
   schemas:
+    EventResolution:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        resolvedTime:
+          type: string
+          format: date-time
+        user:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+    EventClosure:
+      type: object
+      nullable: true
+      description: How the alert was worked. Every field is optional.
+      properties:
+        partnerEventId:
+          type: string
+          nullable: true
+          maxLength: 255
+          description: Your own ID for this event.
+        partnerEventOutcome:
+          type: string
+          nullable: true
+          maxLength: 255
+          description: The outcome in your own terms.
+        partnerEventType:
+          type: string
+          nullable: true
+          maxLength: 255
+          description: The event type in your own terms.
+        expandedTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the first operator opened the alert.
+        escalatedTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the alert was escalated to a second operator.
+        expandedAfterEscalationTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the second operator opened the alert.
+        tags:
+          type: array
+          nullable: true
+          items:
+            type: string
+        alertWasViewed:
+          type: boolean
+          nullable: true
+          description: An operator opened the full view of the alert.
+        alertWasQuickViewed:
+          type: boolean
+          nullable: true
+          description: An operator viewed the alert without opening the full view.
+        quickResolved:
+          type: boolean
+          nullable: true
+          description: An operator resolved the alert without opening the full view.
+        talkdownUsed:
+          type: boolean
+          nullable: true
+          description: A live speaker talkdown was used.
+        prerecordedUsed:
+          type: boolean
+          nullable: true
+          description: Prerecorded sounds were played.
+        lightsUsed:
+          type: boolean
+          nullable: true
+          description: Floodlights or strobes were activated.
     address:
       type: object
       required:
