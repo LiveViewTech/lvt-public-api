@@ -997,8 +997,10 @@ paths:
     post:
       summary: Resolve an event
       description: >-
-        Resolve an event with the provided ID and record how it was closed. An event can be resolved
-        once. Repeating a call with the same userId, resolutionId and resolutionTime is safe.
+        Resolve an event with the provided ID and record how it was closed. The resolver recorded on
+        the event is the LVT user configured for your client, so you do not send a user ID. A client
+        with no resolver user configured gets a 400. An event can be resolved once. Repeating a call
+        with the same resolutionId and resolutionTime is safe.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
@@ -1009,14 +1011,9 @@ paths:
             schema:
               type: object
               required:
-                - userId
                 - resolutionId
                 - resolutionTime
               properties:
-                userId:
-                  type: string
-                  format: uuid
-                  description: The LVT user recorded as the resolver. LVT provides this ID.
                 resolutionId:
                   type: string
                   format: uuid
@@ -1040,12 +1037,19 @@ paths:
                   description: Added to the event's notes.
                 closure:
                   $ref: '#/components/schemas/EventClosure'
+                metadata:
+                  type: object
+                  nullable: true
+                  additionalProperties: true
+                  description: >-
+                    Your own data to store with the closure, such as the ID of the operator in your
+                    system. At most 4096 bytes when serialized.
 
       responses:
         '200':
           description: >-
-            The event was resolved. Repeating the same userId, resolutionId and resolutionTime
-            returns 200 and stores anything an earlier attempt did not.
+            The event was resolved. Repeating the same resolutionId and resolutionTime returns 200
+            and stores anything an earlier attempt did not.
           content:
             application/json:
               schema:
