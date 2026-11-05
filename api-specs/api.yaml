@@ -976,7 +976,7 @@ paths:
                   type: string
                   description: >-
                     The note text. Use notes for interim updates while you work an event, then
-                    resolve it once. The author is recorded as the API, so do not send a user ID.
+                    resolve it once. No author is recorded, so do not send a user ID.
       responses:
         '200':
           $ref: '#/components/responses/createdObject'
@@ -997,8 +997,8 @@ paths:
       summary: Resolve an event
       description: >-
         Resolve an event with the provided ID. This is the one call that closes an event. Send
-        interim updates as notes, then resolve once. The resolver is recorded as the API, so you do
-        not send a user ID. Get the IDs to send from `GET /alerts/resolutions` and
+        interim updates as notes, then resolve once. No user is recorded for the resolution, so you
+        do not send a user ID. Get the IDs to send from `GET /alerts/resolutions` and
         `GET /alerts/categories`. An event can be resolved once. Repeating a call with the same
         resolutionId and resolutionTime is safe and returns 200.
       tags: [Events]
