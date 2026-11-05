@@ -970,14 +970,13 @@ paths:
             schema:
               type: object
               required:
-                - userId
                 - message
               properties:
-                userId:
-                  type: string
-                  description: The UUID of the specific user that added the note.
                 message:
                   type: string
+                  description: >-
+                    The note text. Use notes for interim updates while you work an event, then
+                    resolve it once. The author is recorded as the API, so do not send a user ID.
       responses:
         '200':
           $ref: '#/components/responses/createdObject'
@@ -997,10 +996,11 @@ paths:
     post:
       summary: Resolve an event
       description: >-
-        Resolve an event with the provided ID and record how it was closed. The resolver recorded on
-        the event is the LVT user configured for your client, so you do not send a user ID. A client
-        with no resolver user configured gets a 400. An event can be resolved once. Repeating a call
-        with the same resolutionId and resolutionTime is safe.
+        Resolve an event with the provided ID. This is the one call that closes an event. Send
+        interim updates as notes, then resolve once. The resolver is recorded as the API, so you do
+        not send a user ID. Get the IDs to send from `GET /alerts/resolutions` and
+        `GET /alerts/categories`. An event can be resolved once. Repeating a call with the same
+        resolutionId and resolutionTime is safe and returns 200.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
@@ -1013,43 +1013,34 @@ paths:
               required:
                 - resolutionId
                 - resolutionTime
+                - alertCategory
               properties:
                 resolutionId:
                   type: string
                   format: uuid
                   description: >-
-                    How the event was resolved. LVT provides these IDs. System and archived
-                    resolutions are rejected with a 400.
+                    How the event was resolved. Internal and archived resolutions are rejected with
+                    a 400, as is one that is not an LVT base resolution or one owned by the
+                    event's account.
                 resolutionTime:
                   type: string
                   format: date-time
                   example: 2023-01-01T12:00:00.000Z
-                incidentCategoryId:
+                  description: When the event was resolved. Must use the T separator.
+                alertCategory:
                   type: string
                   format: uuid
-                  nullable: true
                   description: >-
-                    What caused the event. LVT provides these IDs. System and archived incident
-                    categories are rejected with a 400.
+                    What caused the event. Same rules as resolutionId: internal, archived and
+                    unavailable categories are rejected with a 400.
                 note:
                   type: string
-                  nullable: true
                   description: Added to the event's notes.
-                closure:
-                  $ref: '#/components/schemas/EventClosure'
-                metadata:
-                  type: object
-                  nullable: true
-                  additionalProperties: true
-                  description: >-
-                    Your own data to store with the closure, such as the ID of the operator in your
-                    system. At most 4096 bytes when serialized.
 
       responses:
         '200':
           description: >-
-            The event was resolved. Repeating the same resolutionId and resolutionTime returns 200
-            and stores anything an earlier attempt did not.
+            The event was resolved, or the call repeated the resolution already stored.
           content:
             application/json:
               schema:
@@ -1070,11 +1061,15 @@ paths:
         '403':
           $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/404'
+          description: The event, resolution or category ID does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         '409':
           description: >-
-            The event is already resolved. Nothing was stored, including closure fields and the
-            note. Do not retry. The body holds the resolution already on the event.
+            The event is already resolved. Nothing was stored. Do not retry. The body holds the
+            resolution already on the event.
           content:
             application/json:
               schema:
@@ -1084,6 +1079,54 @@ paths:
                     properties:
                       resolution:
                         $ref: '#/components/schemas/EventResolution'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+  /alerts/resolutions:
+    get:
+      summary: List resolutions
+      description: >-
+        The resolution IDs you can send when resolving an event: LVT's base resolutions plus your
+        account's own, without archived, internal or ignored ones.
+      tags: [Events]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlertOption'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+  /alerts/categories:
+    get:
+      summary: List categories
+      description: >-
+        The category IDs you can send as `alertCategory` when resolving an event: LVT's base
+        categories plus your account's own, without archived, internal or ignored ones.
+      tags: [Events]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlertOption'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
         '500':
           $ref: '#/components/responses/500'
         default:
@@ -1648,6 +1691,19 @@ components:
                 $ref: '#/components/schemas/armStateOverride'
 
   schemas:
+    AlertOption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Set on an account's own entries, which sit under a base entry.
     EventResolution:
       type: object
       properties:
@@ -1668,70 +1724,6 @@ components:
               format: uuid
             name:
               type: string
-    EventClosure:
-      type: object
-      nullable: true
-      description: How the alert was worked. Every field is optional.
-      properties:
-        partnerEventId:
-          type: string
-          nullable: true
-          maxLength: 255
-          description: Your own ID for this event.
-        partnerEventOutcome:
-          type: string
-          nullable: true
-          maxLength: 255
-          description: The outcome in your own terms.
-        partnerEventType:
-          type: string
-          nullable: true
-          maxLength: 255
-          description: The event type in your own terms.
-        expandedTime:
-          type: string
-          format: date-time
-          nullable: true
-          description: When the first operator opened the alert.
-        escalatedTime:
-          type: string
-          format: date-time
-          nullable: true
-          description: When the alert was escalated to a second operator.
-        expandedAfterEscalationTime:
-          type: string
-          format: date-time
-          nullable: true
-          description: When the second operator opened the alert.
-        tags:
-          type: array
-          nullable: true
-          items:
-            type: string
-        alertWasViewed:
-          type: boolean
-          nullable: true
-          description: An operator opened the full view of the alert.
-        alertWasQuickViewed:
-          type: boolean
-          nullable: true
-          description: An operator viewed the alert without opening the full view.
-        quickResolved:
-          type: boolean
-          nullable: true
-          description: An operator resolved the alert without opening the full view.
-        talkdownUsed:
-          type: boolean
-          nullable: true
-          description: A live speaker talkdown was used.
-        prerecordedUsed:
-          type: boolean
-          nullable: true
-          description: Prerecorded sounds were played.
-        lightsUsed:
-          type: boolean
-          nullable: true
-          description: Floodlights or strobes were activated.
     address:
       type: object
       required:
