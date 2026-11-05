@@ -970,14 +970,13 @@ paths:
             schema:
               type: object
               required:
-                - userId
                 - message
               properties:
-                userId:
-                  type: string
-                  description: The UUID of the specific user that added the note.
                 message:
                   type: string
+                  description: >-
+                    The note text. Use notes for interim updates while you work an event, then
+                    resolve it once. No author is recorded, so do not send a user ID.
       responses:
         '200':
           $ref: '#/components/responses/createdObject'
@@ -997,10 +996,10 @@ paths:
     post:
       summary: Resolve an event
       description: >-
-        Resolve an event with the provided ID. This is the one call that closes an event. Get the
-        IDs to send from `GET /alerts/resolutions` and `GET /alerts/categories`. An event can be
-        resolved once. Repeating a call with the same resolutionId and resolutionTime is safe and
-        returns 200.
+        Resolve an event with the provided ID. This is the one call that closes an event. Send
+        interim updates as notes, then resolve once. Get the IDs to send from
+        `GET /alerts/resolutions` and `GET /alerts/categories`. An event can be resolved once.
+        Repeating a call with the same resolutionId and resolutionTime is safe and returns 200.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
@@ -1033,6 +1032,9 @@ paths:
                   description: >-
                     What caused the event. Same rules as resolutionId: internal, archived and
                     unavailable categories are rejected with a 400.
+                note:
+                  type: string
+                  description: Added to the event's notes.
 
       responses:
         '200':
