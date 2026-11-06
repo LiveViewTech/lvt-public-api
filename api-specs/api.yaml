@@ -997,10 +997,10 @@ paths:
     post:
       summary: Resolve an event
       description: >-
-        Resolve an event with the provided ID. This is the one call that closes an event. No user is recorded for the resolution, so you
-        do not send a user ID. Get the IDs to send from `GET /alerts/resolutions` and
-        `GET /alerts/categories`. An event can be resolved once. Repeating a call with the same
-        resolutionId and resolutionTime is safe and returns 200.
+        Resolve an event with the provided ID. This is the one call that closes an event. Get the
+        IDs to send from `GET /alerts/resolutions` and `GET /alerts/categories`. An event can be
+        resolved once. Repeating a call with the same resolutionId and resolutionTime is safe and
+        returns 200.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
