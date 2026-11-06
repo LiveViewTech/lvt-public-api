@@ -959,7 +959,9 @@ paths:
   /alerts/events/{id}:addNote:
     post:
       summary: Create a Note
-      description: Create a new Note for the event with the provided ID.
+      description: >-
+        Create a new Note for the event with the provided ID. The note is recorded under the API user
+        whose credentials made the call.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
@@ -1034,7 +1036,7 @@ paths:
                     unavailable categories are rejected with a 400.
                 note:
                   type: string
-                  description: Added to the event's notes.
+                  description: Added to the event's notes, under the calling API user.
 
       responses:
         '200':
