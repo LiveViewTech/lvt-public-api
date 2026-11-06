@@ -981,7 +981,18 @@ paths:
                     resolve it once.
       responses:
         '200':
-          $ref: '#/components/responses/createdObject'
+          description: The note was added.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventId:
+                    type: string
+                    format: uuid
+                  noteId:
+                    type: string
+                    format: uuid
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1036,12 +1047,14 @@ paths:
                     unavailable categories are rejected with a 400.
                 note:
                   type: string
+                  nullable: true
                   description: Added to the event's notes, under the calling API user.
 
       responses:
         '200':
           description: >-
-            The event was resolved, or the call repeated the resolution already stored.
+            The event was resolved, or the call repeated the resolution already stored. A repeat
+            also stores a note an earlier attempt did not.
           content:
             application/json:
               schema:
@@ -1069,8 +1082,8 @@ paths:
                 $ref: '#/components/schemas/error'
         '409':
           description: >-
-            The event is already resolved. Nothing was stored. Do not retry. The body holds the
-            resolution already on the event.
+            The event is already resolved. Nothing was stored, including the note. Do not retry.
+            The body holds the resolution already on the event.
           content:
             application/json:
               schema:
@@ -2375,6 +2388,10 @@ components:
           maxLength: 255
           example: 'This is a note'
         user:
+          nullable: true
+          description: >-
+            The author. For a note made through the API, the API user. Null when the call used an
+            account token, which has no user.
           $ref: '#/components/schemas/alertUser'
         createdTime:
           type: string
