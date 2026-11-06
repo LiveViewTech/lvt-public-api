@@ -996,7 +996,11 @@ paths:
   /alerts/events/{id}:resolve:
     post:
       summary: Resolve an event
-      description: Resolve an event with the provided ID.
+      description: >-
+        Resolve an event with the provided ID. This is the one call that closes an event. Get the
+        IDs to send from `GET /alerts/resolutions` and `GET /alerts/categories`. An event can be
+        resolved once. Repeating a call with the same resolutionId and resolutionTime is safe and
+        returns 200.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
@@ -1009,18 +1013,44 @@ paths:
               required:
                 - resolutionId
                 - resolutionTime
+                - alertCategory
               properties:
                 resolutionId:
                   type: string
                   format: uuid
+                  description: >-
+                    How the event was resolved. Internal and archived resolutions are rejected with
+                    a 400, as is one that is not an LVT base resolution or one owned by the
+                    event's account.
                 resolutionTime:
                   type: string
                   format: date-time
                   example: 2023-01-01T12:00:00.000Z
+                  description: When the event was resolved. Must use the T separator.
+                alertCategory:
+                  type: string
+                  format: uuid
+                  description: >-
+                    What caused the event. Same rules as resolutionId: internal, archived and
+                    unavailable categories are rejected with a 400.
 
       responses:
         '200':
-          $ref: '#/components/responses/updatedObject'
+          description: >-
+            The event was resolved, or the call repeated the resolution already stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventId:
+                    type: string
+                    format: uuid
+                  locationId:
+                    type: string
+                    format: uuid
+                  resolution:
+                    $ref: '#/components/schemas/EventResolution'
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -1028,7 +1058,24 @@ paths:
         '403':
           $ref: '#/components/responses/403'
         '404':
-          $ref: '#/components/responses/404'
+          description: The event, resolution or category ID does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: >-
+            The event is already resolved. Nothing was stored. Do not retry. The body holds the
+            resolution already on the event.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/error'
+                  - type: object
+                    properties:
+                      resolution:
+                        $ref: '#/components/schemas/EventResolution'
         '500':
           $ref: '#/components/responses/500'
         default:
@@ -1654,6 +1701,26 @@ components:
           format: uuid
           nullable: true
           description: Set on an account's own entries, which sit under a base entry.
+    EventResolution:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        resolvedTime:
+          type: string
+          format: date-time
+        user:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
     address:
       type: object
       required:
@@ -2387,7 +2454,9 @@ components:
           example: 2023-01-01T12:00:00.000Z
         user:
           nullable: true
-          description: User who resolved the event. Null if it was auto-resolved by LVT system
+          description: >-
+            User who resolved the event. Null when no user resolved it: an auto-resolve by the LVT
+            system, or a resolution made through the API.
           $ref: '#/components/schemas/alertUser'
 
     alertMedia:
