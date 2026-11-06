@@ -2454,7 +2454,9 @@ components:
           example: 2023-01-01T12:00:00.000Z
         user:
           nullable: true
-          description: User who resolved the event. Null if it was auto-resolved by LVT system
+          description: >-
+            User who resolved the event. Null when no user resolved it: an auto-resolve by the LVT
+            system, or a resolution made through the API.
           $ref: '#/components/schemas/alertUser'
 
     alertMedia:
