@@ -1038,7 +1038,7 @@ paths:
       summary: List resolutions
       description: >-
         The resolution IDs you can send when resolving an event: LVT's base resolutions plus your
-        account's own, without archived, internal or ignored ones.
+        account's own, without archived, internal or hidden ones.
       tags: [Events]
       responses:
         '200':
