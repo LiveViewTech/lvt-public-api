@@ -959,7 +959,9 @@ paths:
   /alerts/events/{id}:addNote:
     post:
       summary: Create a Note
-      description: Create a new Note for the event with the provided ID.
+      description: >-
+        Create a new Note for the event with the provided ID. The note is recorded under the API user
+        whose credentials made the call.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
@@ -970,17 +972,27 @@ paths:
             schema:
               type: object
               required:
-                - userId
                 - message
               properties:
-                userId:
-                  type: string
-                  description: The UUID of the specific user that added the note.
                 message:
                   type: string
+                  description: >-
+                    The note text. Use notes for interim updates while you work an event, then
+                    resolve it once.
       responses:
         '200':
-          $ref: '#/components/responses/createdObject'
+          description: The note was added.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventId:
+                    type: string
+                    format: uuid
+                  noteId:
+                    type: string
+                    format: uuid
         '400':
           $ref: '#/components/responses/400'
         '401':
@@ -997,10 +1009,10 @@ paths:
     post:
       summary: Resolve an event
       description: >-
-        Resolve an event with the provided ID. This is the one call that closes an event. Get the
-        IDs to send from `GET /alerts/resolutions` and `GET /alerts/categories`. An event can be
-        resolved once. Repeating a call with the same resolutionId and resolutionTime is safe and
-        returns 200.
+        Resolve an event with the provided ID. This is the one call that closes an event. Send
+        interim updates as notes, then resolve once. Get the IDs to send from
+        `GET /alerts/resolutions` and `GET /alerts/categories`. An event can be resolved once.
+        Repeating a call with the same resolutionId and resolutionTime is safe and returns 200.
       tags: [Events]
       parameters:
         - $ref: '#/components/parameters/alertEventId'
@@ -1033,11 +1045,16 @@ paths:
                   description: >-
                     What caused the event. Same rules as resolutionId: internal, archived and
                     unavailable categories are rejected with a 400.
+                note:
+                  type: string
+                  nullable: true
+                  description: Added to the event's notes, under the calling API user.
 
       responses:
         '200':
           description: >-
-            The event was resolved, or the call repeated the resolution already stored.
+            The event was resolved, or the call repeated the resolution already stored. A repeat
+            also stores a note an earlier attempt did not.
           content:
             application/json:
               schema:
@@ -1065,8 +1082,8 @@ paths:
                 $ref: '#/components/schemas/error'
         '409':
           description: >-
-            The event is already resolved. Nothing was stored. Do not retry. The body holds the
-            resolution already on the event.
+            The event is already resolved. Nothing was stored, including the note. Do not retry.
+            The body holds the resolution already on the event.
           content:
             application/json:
               schema:
@@ -2371,6 +2388,10 @@ components:
           maxLength: 255
           example: 'This is a note'
         user:
+          nullable: true
+          description: >-
+            The author. For a note made through the API, the API user. Null when the call used an
+            account token, which has no user.
           $ref: '#/components/schemas/alertUser'
         createdTime:
           type: string
