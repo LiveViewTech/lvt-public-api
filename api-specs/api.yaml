@@ -1037,8 +1037,8 @@ paths:
     get:
       summary: List resolutions
       description: >-
-        The resolution IDs you can send when resolving an event: LVT's base resolutions plus your
-        account's own, without archived, internal or hidden ones.
+        The official LVT resolution IDs you can send when resolving an event. The list is the same
+        for every account.
       tags: [Events]
       responses:
         '200':
@@ -1625,11 +1625,6 @@ components:
           format: uuid
         name:
           type: string
-        parentId:
-          type: string
-          format: uuid
-          nullable: true
-          description: Set on an account's own entries, which sit under a base entry.
     address:
       type: object
       required:
