@@ -956,7 +956,7 @@ paths:
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
-  /alerts/events/{id}:addNote:
+  /alerts/events/{id}/addNote:
     post:
       summary: Create a Note
       description: Create a new Note for the event with the provided ID.
@@ -993,7 +993,7 @@ paths:
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
-  /alerts/events/{id}:resolve:
+  /alerts/events/{id}/resolve:
     post:
       summary: Resolve an event
       description: >-
@@ -1127,7 +1127,7 @@ paths:
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
-  /alerts/events/{id}:assignUser:
+  /alerts/events/{id}/assignUser:
     post:
       summary: Assign a user to an event
       description: Assign a user to an event with the provided ID.
