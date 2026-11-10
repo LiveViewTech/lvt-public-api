@@ -1019,9 +1019,8 @@ paths:
                   type: string
                   format: uuid
                   description: >-
-                    How the event was resolved. Internal and archived resolutions are rejected with
-                    a 400, as is one that is not an LVT base resolution or one owned by the
-                    event's account.
+                    How the event was resolved. Must be an ID from `GET /alerts/resolutions`. Any
+                    other ID, including an account's custom resolution, is rejected with a 400.
                 resolutionTime:
                   type: string
                   format: date-time
@@ -1031,8 +1030,8 @@ paths:
                   type: string
                   format: uuid
                   description: >-
-                    What caused the event. Same rules as resolutionId: internal, archived and
-                    unavailable categories are rejected with a 400.
+                    What caused the event. Must be an ID from `GET /alerts/categories`. Any other
+                    ID, including an account's custom category, is rejected with a 400.
 
       responses:
         '200':
@@ -1084,8 +1083,8 @@ paths:
     get:
       summary: List resolutions
       description: >-
-        The resolution IDs you can send when resolving an event: LVT's base resolutions plus your
-        account's own, without archived, internal or hidden ones.
+        The official LVT resolution IDs you can send when resolving an event. The list is the same
+        for every account.
       tags: [Events]
       responses:
         '200':
@@ -1108,8 +1107,8 @@ paths:
     get:
       summary: List categories
       description: >-
-        The category IDs you can send as `alertCategory` when resolving an event: LVT's base
-        categories plus your account's own, without archived, internal or hidden ones.
+        The official LVT category IDs you can send as `alertCategory` when resolving an event. The
+        list is the same for every account.
       tags: [Events]
       responses:
         '200':
@@ -1696,6 +1695,7 @@ components:
           format: uuid
         name:
           type: string
+<<<<<<< HEAD
         parentId:
           type: string
           format: uuid
@@ -1721,6 +1721,8 @@ components:
               format: uuid
             name:
               type: string
+=======
+>>>>>>> cainenielsen/public-api-category-list
     address:
       type: object
       required:
