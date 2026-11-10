@@ -1695,12 +1695,6 @@ components:
           format: uuid
         name:
           type: string
-<<<<<<< HEAD
-        parentId:
-          type: string
-          format: uuid
-          nullable: true
-          description: Set on an account's own entries, which sit under a base entry.
     EventResolution:
       type: object
       properties:
@@ -1721,8 +1715,6 @@ components:
               format: uuid
             name:
               type: string
-=======
->>>>>>> cainenielsen/public-api-category-list
     address:
       type: object
       required:
