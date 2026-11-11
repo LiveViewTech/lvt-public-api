@@ -1032,6 +1032,15 @@ paths:
                   description: >-
                     What caused the event. Must be an ID from `GET /alerts/categories`. Any other
                     ID, including an account's custom category, is rejected with a 400.
+                note:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Called the site contact, no one on site
+                  description: >-
+                    Optional note to add to the event. The note has no user, and its author name
+                    is `partner_resolve:` followed by your client ID. Repeating a resolve does not
+                    add it twice. It is not added if the event was already resolved by another call.
 
       responses:
         '200':
@@ -2365,7 +2374,7 @@ components:
           maxLength: 255
           example: 'This is a note'
         user:
-          $ref: '#/components/schemas/alertUser'
+          $ref: '#/components/schemas/alertNoteUser'
         createdTime:
           type: string
           format: date-time
@@ -2389,6 +2398,23 @@ components:
         name:
           type: string
           description: The name of the user
+          example: greg thomas
+    alertNoteUser:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+          description: The UUID of the user. Null for a note added through the resolve endpoint.
+        name:
+          type: string
+          description: >-
+            The name of the user. For a note added through the resolve endpoint it is
+            `partner_resolve:` followed by the client ID.
           example: greg thomas
     alertNotes:
       type: array
