@@ -386,6 +386,8 @@ When a resolution is posted, due to the asynchronous nature of the events, other
 
 The `resolution` field can replace the `events[eventId].resolution` property.
 
+`resolution.user` is `null` for an automatic resolution. Otherwise its `type` says what the `id` is: `user`, `api_user` or `account` (the account or API user that resolved the event through the API). A missing `type` means `user`.
+
 Example `data` contents:
 
 ```json
@@ -397,7 +399,8 @@ Example `data` contents:
     "resolvedTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
     "user": {
       "id": "2be3bb16-e56c-11ee-bd3d-0242ac120002",
-      "name": "John Doe"
+      "name": "John Doe",
+      "type": "user"
     }
   }
 }
