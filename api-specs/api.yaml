@@ -2399,9 +2399,9 @@ components:
           example: greg thomas
     authorType:
       type: string
-      enum: [user, api_user, account]
+      enum: [user, service_user, account, api_user]
       description: >-
-        What kind of id the author is: a `user`, an `api_user` or an `account`. A missing type
+        What kind of id the author is: a `user`, a `service_user`, an `account` or an `api_user`. A missing type
         means `user`.
     alertAuthor:
       type: object

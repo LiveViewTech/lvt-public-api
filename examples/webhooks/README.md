@@ -357,7 +357,7 @@ During the investigation of an event, a user, or an account or API user resolvin
 
 The `note` field can be appended to the `events[eventId].notes` array.
 
-`note.user.type` says what the `id` is: `user`, `api_user` or `account`. A missing `type` means `user`.
+`note.user.type` says what the `id` is: `user`, `service_user`, `account` or `api_user`. A missing `type` means `user`.
 
 Example `data` contents:
 
@@ -389,7 +389,7 @@ When a resolution is posted, due to the asynchronous nature of the events, other
 
 The `resolution` field can replace the `events[eventId].resolution` property.
 
-`resolution.user` is `null` for an automatic resolution. Otherwise its `type` says what the `id` is: `user`, `api_user` or `account` (the account or API user that resolved the event through the API). A missing `type` means `user`.
+`resolution.user` is `null` for an automatic resolution. Otherwise its `type` says what the `id` is: `user`, `service_user`, `account` or `api_user` (the account or API user that resolved the event through the API). A missing `type` means `user`.
 
 Example `data` contents:
 
