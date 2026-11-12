@@ -348,7 +348,7 @@ an actual test image using the same endpoint.
 
 ### `noteAdded`
 
-During the investigation of an event, a user may add notes about the event. Notes are owned by an event and not by alerts.
+During the investigation of an event, a user, or an account or API user resolving the event through the API, may add notes about the event. Notes are owned by an event and not by alerts.
 
 | Field     | Type          | Description                              |
 |-----------|---------------|------------------------------------------|
@@ -356,6 +356,8 @@ During the investigation of an event, a user may add notes about the event. Note
 | `note`    | `note`        | The note object.                         |
 
 The `note` field can be appended to the `events[eventId].notes` array.
+
+`note.user.type` says what the `id` is: `user`, `api_user` or `account`. A missing `type` means `user`.
 
 Example `data` contents:
 
@@ -367,7 +369,8 @@ Example `data` contents:
     "message": "This is a note",
     "user": {
       "id": "2be3bb16-e56c-11ee-bd3d-0242ac120002",
-      "name": "John Doe"
+      "name": "John Doe",
+      "type": "user"
     },
     "createdTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>",
     "updatedTime": "<CURRENT_TIME_AS_ISO_8601_TIMESTAMP>"
