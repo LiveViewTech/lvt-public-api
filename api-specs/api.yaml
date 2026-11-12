@@ -1033,6 +1033,30 @@ paths:
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
+  /alerts/resolutions:
+    get:
+      summary: List resolutions
+      description: >-
+        The official LVT resolution IDs you can send when resolving an event. The list is the same
+        for every account.
+      tags: [Events]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlertOption'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
   /alerts/events/{id}:assignUser:
     post:
       summary: Assign a user to an event
@@ -1593,6 +1617,17 @@ components:
                 $ref: '#/components/schemas/armStateOverride'
 
   schemas:
+    AlertOption:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
     address:
       type: object
       required:
