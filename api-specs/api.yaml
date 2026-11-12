@@ -1032,6 +1032,15 @@ paths:
                   description: >-
                     What caused the event. Must be an ID from `GET /alerts/categories`. Any other
                     ID, including an account's custom category, is rejected with a 400.
+                note:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  example: Called the site contact, no one on site
+                  description: >-
+                    Optional note to add to the event. Its author is the account or API user making
+                    the call, with the same type as the resolution. Repeating a resolve does not
+                    add it twice. It is not added if the event was already resolved by another call.
 
       responses:
         '200':
@@ -1710,14 +1719,12 @@ components:
           type: string
           format: date-time
         user:
-          type: object
           nullable: true
-          properties:
-            id:
-              type: string
-              format: uuid
-            name:
-              type: string
+          description: >-
+            Who resolved the event: a user, an API user or an account, as its type says. For a
+            resolution made through the API it is the account or API user making the call.
+          allOf:
+            - $ref: '#/components/schemas/alertAuthor'
     address:
       type: object
       required:
@@ -2368,7 +2375,7 @@ components:
           maxLength: 255
           example: 'This is a note'
         user:
-          $ref: '#/components/schemas/alertUser'
+          $ref: '#/components/schemas/alertAuthor'
         createdTime:
           type: string
           format: date-time
@@ -2393,6 +2400,29 @@ components:
           type: string
           description: The name of the user
           example: greg thomas
+    authorType:
+      type: string
+      enum: [user, service_user, account, api_user]
+      description: >-
+        What kind of id the author is: a `user`, a `service_user`, an `account` or an `api_user`. A missing type
+        means `user`.
+    alertAuthor:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+          description: The UUID of the user, API user or account, as the type says.
+        name:
+          type: string
+          description: The name of the author.
+          example: greg thomas
+        type:
+          $ref: '#/components/schemas/authorType'
     alertNotes:
       type: array
       items:
@@ -2452,9 +2482,10 @@ components:
         user:
           nullable: true
           description: >-
-            User who resolved the event. Null when no user resolved it: an auto-resolve by the LVT
-            system, or a resolution made through the API.
-          $ref: '#/components/schemas/alertUser'
+            Who resolved the event: a user, an API user or an account, as its type says. Null for
+            an auto-resolve by the LVT system.
+          allOf:
+            - $ref: '#/components/schemas/alertAuthor'
 
     alertMedia:
       type: object
