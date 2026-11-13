@@ -2303,6 +2303,28 @@ components:
           type: string
           description: The name of the user
           example: greg thomas
+    authorType:
+      type: string
+      enum: [user, service_user, account, api_user]
+      description: >-
+        What kind of id the author is: a `user`, a `service_user`, an `account` or an `api_user`. A missing type
+        means `user`.
+    alertAuthor:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The UUID of the user, API user or account, as the type says.
+        name:
+          type: string
+          description: The name of the author.
+          example: greg thomas
+        type:
+          $ref: '#/components/schemas/authorType'
     alertNotes:
       type: array
       items:
@@ -2361,8 +2383,11 @@ components:
           example: 2023-01-01T12:00:00.000Z
         user:
           nullable: true
-          description: User who resolved the event. Null if it was auto-resolved by LVT system
-          $ref: '#/components/schemas/alertUser'
+          description: >-
+            Who resolved the event, with what kind of id it is. Null if it was auto-resolved by LVT
+            system
+          allOf:
+            - $ref: '#/components/schemas/alertAuthor'
 
     alertMedia:
       type: object
