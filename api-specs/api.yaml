@@ -1048,7 +1048,31 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AlertOption'
+                  $ref: '#/components/schemas/ClassificationEntry'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+  /alerts/categories:
+    get:
+      summary: List categories
+      description: >-
+        The official LVT category IDs you can send as `alertCategory` when resolving an event. The
+        list is the same for every account.
+      tags: [Events]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClassificationEntry'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -1617,7 +1641,7 @@ components:
                 $ref: '#/components/schemas/armStateOverride'
 
   schemas:
-    AlertOption:
+    ClassificationEntry:
       type: object
       required:
         - id
