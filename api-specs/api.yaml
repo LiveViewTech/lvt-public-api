@@ -2485,13 +2485,15 @@ components:
           description: ISO 8601 formatted string. Represents the `timestamp` at which the event was resolved
           example: 2023-01-01T12:00:00.000Z
         user:
+          type: object
           nullable: true
           description: >-
             Who resolved the event. Null if it was auto-resolved by LVT system. For a resolution made
             through the API it is the calling account or API user, not a user: its id is that
             account's or API user's id, and its name is a label that starts with its type
             (`account:` or `api_user:`). Treat the name as text and do not parse it.
-          $ref: '#/components/schemas/alertUser'
+          allOf:
+            - $ref: '#/components/schemas/alertUser'
 
     alertMedia:
       type: object
