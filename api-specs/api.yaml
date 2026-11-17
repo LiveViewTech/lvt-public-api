@@ -1106,7 +1106,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AlertOption'
+                  $ref: '#/components/schemas/ClassificationEntry'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -1675,7 +1675,7 @@ components:
                 $ref: '#/components/schemas/armStateOverride'
 
   schemas:
-    AlertOption:
+    ClassificationEntry:
       type: object
       required:
         - id
