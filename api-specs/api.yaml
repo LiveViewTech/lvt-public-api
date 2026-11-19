@@ -1898,7 +1898,7 @@ components:
         - $ref: '#/components/schemas/paginated'
         - type: object
           required:
-            - cameras
+            - items
           properties:
             items:
               type: array
@@ -2205,7 +2205,6 @@ components:
     paginated:
       type: object
       required: # items should also be defined but is omitted from the schema to keep it generic
-        - itemsPerPage
         - nextCursorUri
         - totalResults
       properties:
@@ -2255,6 +2254,7 @@ components:
             $ref: '#/components/schemas/alert'
         assignedUser:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/alertUser'
         client:
@@ -2267,6 +2267,7 @@ components:
           $ref: '#/components/schemas/alertNotes'
         resolution:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/alertResolution'
         priority:
@@ -2409,6 +2410,7 @@ components:
           default: false
         parentAlert:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/alertTypeSummary'
         readOnly:
