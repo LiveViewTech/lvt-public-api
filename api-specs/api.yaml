@@ -1044,7 +1044,9 @@ paths:
         read the `status` of each result. An event can be resolved once. Sending an item again with
         the same resolutionId and resolutionTime from the same client is safe and returns 200, so
         resend an item whose result is 500, or the whole request after a timeout, until every item is
-        200 or 409. Do not resend an item whose result is 409, 400 or 404.
+        200 or 409. Do not resend an item whose result is 409, 400 or 404. A repeat of an item that
+        has a `note` also sends the `noteAdded` webhook again, so you can receive a second
+        `noteAdded` webhook, but the note is stored once.
       tags: [Events]
       requestBody:
         required: true
@@ -1739,6 +1741,15 @@ components:
           description: >-
             What caused the event. Must be an ID from `GET /alerts/categories`. Any other ID,
             including an account's custom category, is rejected.
+        note:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 255
+          description: >-
+            Optional note on the event, written by the caller and shown in the alert history. Trimmed
+            before it is checked. It is written only when this call resolves the event, or when a repeat
+            of the same resolution finds it missing.
     BulkResolveResult:
       type: object
       required:
