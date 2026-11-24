@@ -1038,7 +1038,7 @@ paths:
       summary: Resolve several events
       description: >-
         Resolve up to 100 events in one call. This is how to close events through the API. Get the
-        IDs to send from `GET /alerts/resolutions` and `GET /alerts/categories`. Each item is handled
+        IDs to send from `GET /alerts/resolutionTypes` and `GET /alerts/incidentCategories`. Each item is handled
         on its own, in order, and the response has one result per item in the same order, so an item
         that fails does not stop the others. The call returns 200 whenever the request is well formed;
         read the `status` of each result. An event can be resolved once. Sending an item again with
@@ -1093,12 +1093,61 @@ paths:
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
+  /alerts/resolutionTypes:
+    get:
+      summary: List resolution types
+      description: >-
+        The official LVT resolution type IDs you can send when resolving an event. The list is the same
+        for every account.
+      tags: [Events]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClassificationEntry'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
   /alerts/resolutions:
     get:
+      deprecated: true
       summary: List resolutions
       description: >-
         The official LVT resolution IDs you can send when resolving an event. The list is the same
-        for every account.
+        for every account. Deprecated alias of `GET /alerts/resolutionTypes`, which returns the same list.
+      tags: [Events]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClassificationEntry'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+        default:
+          $ref: '#/components/responses/defaultError'
+  /alerts/incidentCategories:
+    get:
+      summary: List incident categories
+      description: >-
+        The official LVT incident category IDs you can send as `alertCategory` when resolving an event. The
+        list is the same for every account.
       tags: [Events]
       responses:
         '200':
@@ -1119,10 +1168,11 @@ paths:
           $ref: '#/components/responses/defaultError'
   /alerts/categories:
     get:
+      deprecated: true
       summary: List categories
       description: >-
         The official LVT category IDs you can send as `alertCategory` when resolving an event. The
-        list is the same for every account.
+        list is the same for every account. Deprecated alias of `GET /alerts/incidentCategories`, which returns the same list.
       tags: [Events]
       responses:
         '200':
@@ -1728,7 +1778,7 @@ components:
           type: string
           format: uuid
           description: >-
-            How the event was resolved. Must be an ID from `GET /alerts/resolutions`. Any other ID,
+            How the event was resolved. Must be an ID from `GET /alerts/resolutionTypes`. Any other ID,
             including an account's custom resolution, is rejected.
         resolutionTime:
           type: string
@@ -1739,7 +1789,7 @@ components:
           type: string
           format: uuid
           description: >-
-            What caused the event. Must be an ID from `GET /alerts/categories`. Any other ID,
+            What caused the event. Must be an ID from `GET /alerts/incidentCategories`. Any other ID,
             including an account's custom category, is rejected.
         note:
           type: string
