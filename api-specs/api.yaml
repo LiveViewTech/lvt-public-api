@@ -1037,8 +1037,9 @@ paths:
     post:
       summary: Resolve several events
       description: >-
-        Resolve up to 100 events in one call. This is how to close events through the API. Get the
-        IDs to send from `GET /alerts/resolutions` and `GET /alerts/categories`. Each item is handled
+        Resolve up to 100 events in one call. This is how to close events through the API. The
+        resolution and category IDs to send are listed in
+        [Alert resolution IDs](https://github.com/LiveViewTech/lvt-public-api/blob/master/examples/alert-resolution/README.md). Each item is handled
         on its own, in order, and the response has one result per item in the same order, so an item
         that fails does not stop the others. The call returns 200 whenever the request is well formed;
         read the `status` of each result. An event can be resolved once. Sending an item again with
@@ -1728,8 +1729,9 @@ components:
           type: string
           format: uuid
           description: >-
-            How the event was resolved. Must be an ID from `GET /alerts/resolutions`. Any other ID,
-            including an account's custom resolution, is rejected.
+            How the event was resolved. Must be an ID from the
+            [resolutions list](https://github.com/LiveViewTech/lvt-public-api/blob/master/examples/alert-resolution/README.md#resolutions). Any other ID, including an account's custom
+            resolution, is rejected.
         resolutionTime:
           type: string
           format: date-time
@@ -1739,8 +1741,9 @@ components:
           type: string
           format: uuid
           description: >-
-            What caused the event. Must be an ID from `GET /alerts/categories`. Any other ID,
-            including an account's custom category, is rejected.
+            What caused the event. Must be an ID from the
+            [incident categories list](https://github.com/LiveViewTech/lvt-public-api/blob/master/examples/alert-resolution/README.md#incident-categories). Any other ID, including an account's
+            custom category, is rejected.
         note:
           type: string
           nullable: true
