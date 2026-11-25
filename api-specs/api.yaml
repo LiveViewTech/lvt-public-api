@@ -1094,54 +1094,6 @@ paths:
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
-  /alerts/resolutions:
-    get:
-      summary: List resolutions
-      description: >-
-        The official LVT resolution IDs you can send when resolving an event. The list is the same
-        for every account.
-      tags: [Events]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ClassificationEntry'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
-  /alerts/categories:
-    get:
-      summary: List categories
-      description: >-
-        The official LVT category IDs you can send as `alertCategory` when resolving an event. The
-        list is the same for every account.
-      tags: [Events]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ClassificationEntry'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
   /alerts/events/{id}:assignUser:
     post:
       summary: Assign a user to an event
@@ -1702,17 +1654,6 @@ components:
                 $ref: '#/components/schemas/armStateOverride'
 
   schemas:
-    ClassificationEntry:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
     BulkResolveItem:
       type: object
       required:
@@ -1770,7 +1711,7 @@ components:
           enum: [200, 400, 404, 409, 500]
           description: >-
             200 the event was resolved, or the item repeated the resolution already stored. 400 the
-            item is not valid, or an ID is not one of the listed resolutions or categories. 404 the
+            item is not valid, or an ID is not one of the documented resolutions or categories. 404 the
             event, resolution or category does not exist. 409 the event is already resolved, so
             nothing was stored. 500 the item failed and can be sent again.
         resolution:
