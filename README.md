@@ -146,6 +146,10 @@ A security alert is triggered from the live unit and sends media which occurred 
 
 ### Media
 Media associated with an alert will either be a mp4 video clip or a jpg image. A signed url of the media can be obtained with the media id and the `GET` `v1/alerts/media/:mediaId/url` endpoint. The signed url will expire after 30 minutes.
+
+### Resolving events
+Events are resolved with `POST /alerts/events:resolve`. The resolution and incident category IDs it accepts are listed in [alert resolution IDs](./examples/alert-resolution/README.md).
+
 ## Webhooks
 
 The `/webhooks` endpoints of the API are basic CRUD except that the provided URL is tested on creation and updates. There is a `/webhooks:test` endpoint provided to help develop 

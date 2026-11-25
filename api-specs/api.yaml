@@ -1033,12 +1033,13 @@ paths:
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
-  /alerts/events/resolve:
+  /alerts/events:resolve:
     post:
       summary: Resolve several events
       description: >-
-        Resolve up to 100 events in one call. This is how to close events through the API. Get the
-        IDs to send from `GET /alerts/resolutions` and `GET /alerts/categories`. Each item is handled
+        Resolve up to 100 events in one call. This is how to close events through the API. The
+        resolution and category IDs to send are listed in
+        [Alert resolution IDs](https://github.com/LiveViewTech/lvt-public-api/blob/master/examples/alert-resolution/README.md). Each item is handled
         on its own, in order, and the response has one result per item in the same order, so an item
         that fails does not stop the others. The call returns 200 whenever the request is well formed;
         read the `status` of each result. An event can be resolved once. Sending an item again with
@@ -1085,54 +1086,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
-  /alerts/resolutions:
-    get:
-      summary: List resolutions
-      description: >-
-        The official LVT resolution IDs you can send when resolving an event. The list is the same
-        for every account.
-      tags: [Events]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ClassificationEntry'
-        '401':
-          $ref: '#/components/responses/401'
-        '403':
-          $ref: '#/components/responses/403'
-        '500':
-          $ref: '#/components/responses/500'
-        default:
-          $ref: '#/components/responses/defaultError'
-  /alerts/categories:
-    get:
-      summary: List categories
-      description: >-
-        The official LVT category IDs you can send as `alertCategory` when resolving an event. The
-        list is the same for every account.
-      tags: [Events]
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ClassificationEntry'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -1701,17 +1654,6 @@ components:
                 $ref: '#/components/schemas/armStateOverride'
 
   schemas:
-    ClassificationEntry:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
     BulkResolveItem:
       type: object
       required:
@@ -1728,8 +1670,9 @@ components:
           type: string
           format: uuid
           description: >-
-            How the event was resolved. Must be an ID from `GET /alerts/resolutions`. Any other ID,
-            including an account's custom resolution, is rejected.
+            How the event was resolved. Must be an ID from the
+            [resolutions list](https://github.com/LiveViewTech/lvt-public-api/blob/master/examples/alert-resolution/README.md#resolutions). Any other ID, including an account's custom
+            resolution, is rejected.
         resolutionTime:
           type: string
           format: date-time
@@ -1739,8 +1682,9 @@ components:
           type: string
           format: uuid
           description: >-
-            What caused the event. Must be an ID from `GET /alerts/categories`. Any other ID,
-            including an account's custom category, is rejected.
+            What caused the event. Must be an ID from the
+            [incident categories list](https://github.com/LiveViewTech/lvt-public-api/blob/master/examples/alert-resolution/README.md#incident-categories). Any other ID, including an account's
+            custom category, is rejected.
         note:
           type: string
           nullable: true
@@ -1767,7 +1711,7 @@ components:
           enum: [200, 400, 404, 409, 500]
           description: >-
             200 the event was resolved, or the item repeated the resolution already stored. 400 the
-            item is not valid, or an ID is not one of the listed resolutions or categories. 404 the
+            item is not valid, or an ID is not one of the documented resolutions or categories. 404 the
             event, resolution or category does not exist. 409 the event is already resolved, so
             nothing was stored. 500 the item failed and can be sent again.
         resolution:
