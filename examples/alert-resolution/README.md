@@ -1,6 +1,6 @@
 # Alert resolution IDs
 
-When you resolve events with `POST /alerts/events:resolve`, `resolutionId` and `alertCategory` must be IDs from the tables below. The lists are the same for every account. Any other ID, including an account's custom resolution or category, is rejected with a 400 that names the field. See the [API Specification](../../api-specs/api.yaml) for the request and response.
+When you resolve events with `POST /alerts/events:resolve`, `resolutionId` and `alertCategory` must be IDs from the tables below. The lists are the same for every account. Any other ID, including an account's custom resolution or category, is rejected for that item: its result has status 400 and `errorCauses` names the field, and an ID that does not exist is a 404. A well-formed request still returns 200. See the [API Specification](../../api-specs/api.yaml) for the request and response.
 
 ## Resolutions
 
