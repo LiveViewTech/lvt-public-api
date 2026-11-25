@@ -1033,7 +1033,7 @@ paths:
           $ref: '#/components/responses/500'
         default:
           $ref: '#/components/responses/defaultError'
-  /alerts/events/resolve:
+  /alerts/events:resolve:
     post:
       summary: Resolve several events
       description: >-
